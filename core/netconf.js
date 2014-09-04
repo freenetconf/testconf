@@ -13,6 +13,10 @@
  * along with testconf. If not, see <http://www.gnu.org/licenses/>.
  */
 
+var path = require("path")
+var fs = require('fs')
+var debug = require('./debug')
+
 // netconf base 1.0 and base 1.1 ending
 var netconf_ending = [ "]]>]]>", "\n##\n" ]
 
@@ -31,6 +35,14 @@ var netconf_hello_ending = '</hello>' + netconf_ending[0]
 
 var netconf_rpc_end = '</rpc>'
 var netconf_rpc_reply_end = '</rpc-reply>'
+
+var rpc_error_tag = []
+rpc_error_tag.push("in-use")
+rpc_error_tag.push("invalid-value")
+rpc_error_tag.push("operation-not-supported")
+rpc_error_tag.push("operation-failed")
+rpc_error_tag.push("data-missing")
+
 
 exports.hello = function(capabilities, session_id)
 {
@@ -155,3 +167,58 @@ exports.create_rpc_reply_message = function(message, base, message_id)
 
 	return (base == 1 ? create_framing_chunk(message.length) + r_message : r_message)
 }
+
+exports.capabilities_from_yang = function(yang_dir)
+{
+	var capabilities = ''
+	var files = fs.readdirSync(yang_dir)
+
+	if (!files)
+		return capabilities
+
+	files.forEach(function(file)
+	{
+		debug.write('... ' + file, true);
+
+		file = path.basename(file, '.yang')
+
+		var parts = file.split("@")
+		if (!parts.length)
+			return
+
+		var capability = '<capability>urn:ietf:params:xml:ns:yang:'
+		capability += parts[0] + "?module=" + parts[0]
+		if (typeof parts[1] !== 'undefined')
+			capability += "&amp;revision=" + parts[1]
+
+		capability += "</capability>"
+
+		capabilities += capability
+	})
+
+	return capabilities
+}
+
+
+exports.rpc_error = function(msg, tag, type, severity)
+{
+	var rpc_error = {}
+	rpc_error["error-message"] = msg || ""
+	rpc_error["error-type"] = type || "rpc"
+	rpc_error["error-tag"] = tag || "operation-failed"
+	rpc_error["error-severity"] = severity || "error"
+
+	if (rpc_error_tag.filter(function(e)
+	{
+		if (e == rpc_error["error-tag"])
+			return e
+
+	}).length == 0)
+	{
+		debug.write('... rpc-error: tag must be one of:' , true)
+		debug.write(rpc_error_tag , true)
+	}
+
+	return rpc_error
+}
+

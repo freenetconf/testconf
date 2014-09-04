@@ -17,11 +17,11 @@ var fs = require('fs');
 var xml2js = require('xml2js')
 var util = require('util')
 var events = require("events")
-var path = require("path")
 
 var libssh = require('ssh')
 var netconf = require('../core/netconf')
 var debug = require('../core/debug')
+var config = require('../core/config')
 
 var builder = new xml2js.Builder();
 
@@ -39,41 +39,30 @@ var server = function(options, callback)
 	this.ssh_key = opts.ssh_key || null
 	this.send_hello_message = opts.send_hello_message || true
 	this.rpc_methods = {}
-
 	var self = this
+
 	debug.write('. executing test named "' + this.name + '"', true);
+
+	try
+	{
+		self.rpc_methods = require(config.server_methods_dir + "core.js")
+	}
+	catch(e)
+	{
+		debug.write(e, true)
+	}
 
 	events.EventEmitter.call(this);
 
 	debug.write('.. reading yang directory', true);
 
-	var files = fs.readdirSync("../../yang")
-	var capabilities = ''
-	files.forEach(function(file)
-	{
-		debug.write('... ' + file, true);
-
-		var capability = '<capability>urn:ietf:params:xml:ns:yang:'
-		file = path.basename(file, '.yang')
-
-		var parts = file.split("@")
-		if (!parts.length)
-			return
-
-		capability += parts[0] + "?module=" + parts[0]
-		if (typeof parts[1] !== 'undefined')
-			capability += "&amp;revision=" + parts[1]
-
-		capability += "</capability>"
-
-		capabilities += capability
-	})
+	var capabilities = netconf.capabilities_from_yang(config.yang_dir)
 
 	var ssh_channel = null
 	var ssh = libssh.createServer
 	({
-		hostRsaKeyFile : '../../keys/ssh_host_rsa_key',
-		hostDsaKeyFile : '../../keys/ssh_host_dsa_key'
+		hostRsaKeyFile : config.keys_dir + 'ssh_host_rsa_key',
+		hostDsaKeyFile : config.keys_dir + 'ssh_host_dsa_key'
 	})
 
 	ssh.listen(self.port)
@@ -90,7 +79,7 @@ var server = function(options, callback)
 			{
 				if (message.subtype == 'publickey' &&
 					message.authUser == self.user &&
-					message.comparePublicKey(fs.readFileSync('../../keys/admin_rsa.pub')))
+					message.comparePublicKey(fs.readFileSync(config.keys_dir + 'admin_rsa.pub')))
 				{
 					debug.write('... authenticated "' + self.user + '" using public key', true)
 					return message.replyAuthSuccess()
@@ -268,71 +257,6 @@ var server = function(options, callback)
 		})
 	})
 
-	this.rpc_methods["get"] = function(oin, res)
-	{
-		res({"data" : ''})
-	}
-
-	this.rpc_methods["get-config"] = function(oin, res)
-	{
-		res({"data" : ''})
-	}
-
-	this.rpc_methods["edit-config"] = function(oin, res)
-	{
-		res({"ok" : ''})
-	}
-
-	this.rpc_methods["kill-session"] = function(oin, res)
-	{
-		res({"ok" : ''})
-	}
-
-	this.rpc_methods["close-session"] = function(oin, res)
-	{
-		res({"ok" : ''})
-	}
-
-	this.rpc_methods["lock"] = function(oin, res)
-	{
-		res({"ok" : ''})
-	}
-
-	this.rpc_methods["unlock"] = function(oin, res)
-	{
-		res({"ok" : ''})
-	}
-
-	this.rpc_methods["get-schema"] = function(oin, response)
-	{
-		if (typeof oin.identifier === 'undefined')
-			return self.emit('error', 'schema identifier missing')
-
-		var file_name = "../../yang/" + oin.identifier
-		var format = 'yang'
-
-		if (typeof oin.version !== 'undefined')
-			file_name += "@" + oin.version
-
-		if (typeof oin.format !== 'undefined')
-		{
-			if (oin.format != 'yang')
-				return self.emit('error', 'get-schema: only "yang" format supported')
-		}
-
-		file_name += "." + format
-
-		fs.readFile(file_name, 'utf8', function(error, file) {
-		if (error)
-			return self.emit('error', error)
-
-			var o_data = {"data" : {}}
-			o_data.data['_'] = file
-			o_data.data['$'] = { "xmlns": "urn:ietf:params:xml:ns:yang:ietf-netconf-monitoring"}
-
-			response(o_data)
-		});
-	}
 }
 
 util.inherits(server, events.EventEmitter);
