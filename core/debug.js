@@ -15,23 +15,22 @@
 
 var net = require('net');
 
-debug = net.connect({ path: '/tmp/testconf.sock' });
+var socket = net.connect({ path: '/tmp/testconf.sock' });
 
-debug.on('error', function(e) {
-	debug.end();
+socket.on('error', function(e) {
+	socket.end();
 });
 
-exports.start = function(msg, console_on) {
-	debug = net.connect({ path: '/tmp/testconf.sock' });
-};
-
 exports.write = function(msg, console_on) {
-	if (console_on)
-		console.log(msg);
+	if (!msg)
+		return
 
-	debug.write(msg + '\n');
-};
+	if (console_on)
+		console.log(msg)
+
+	socket.write(msg + '\n')
+}
 
 exports.end = function() {
-	debug.end();
-};
+	socket.end();
+}
