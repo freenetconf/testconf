@@ -21,15 +21,16 @@ var util = require('util')
 
 var netconf = require('../core/netconf')
 var debug = require('../core/debug')
+var config = require('../core/config')
 
 var client = function(options, callback)
 {
 	var opts = options || {}
 	this.name = opts.name || 'unknown'
-	this.host = opts.host || '::'
-	this.port = opts.port || 830
-	this.user = opts.user || 'admin'
-	this.pass = opts.pass || 'admin'
+	this.host = opts.host || config.netconf.host
+	this.port = opts.port || config.netconf.port
+	this.user = opts.user || config.netconf.user
+	this.pass = opts.pass || config.netconf.pass
 	this.capabilities = opts.capabilities || []
 	this.ssh_key = opts.ssh_key || null
 	this.send_hello_message = opts.send_hello_message || true

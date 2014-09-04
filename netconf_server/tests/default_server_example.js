@@ -15,7 +15,7 @@
 
 var netconf_server = require('../netconf_server')
 
-var server = netconf_server.create( {port : 830}, function(error, rpc_methods)
+var server = netconf_server.create( {host : '127.0.0.1'}, function(error, rpc_methods)
 {
 	if (error)
 	{
