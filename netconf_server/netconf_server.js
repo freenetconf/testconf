@@ -125,8 +125,13 @@ var server = function(options, callback)
 					if (self.send_hello_message)
 					{
 						var h = netconf.hello(capabilities, connection.session_id)
-						debug.write('.... sending hello message:' + h, true)
+						debug.write('.... sending hello message', true)
+
 						channel.write(h)
+
+						debug.write('<<<< msg netconf (hello) <<<<', false);
+						debug.write(h, false);
+						debug.write('---- msg netconf (hello) ----', false);
 					}
 				})
 
