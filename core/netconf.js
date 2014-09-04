@@ -222,3 +222,9 @@ exports.rpc_error = function(msg, tag, type, severity)
 	return rpc_error
 }
 
+exports.add_method = function(methods, path, method)
+{
+	methods = methods || {}
+	methods["paths"] = methods["paths"] || []
+	methods["paths"].push({path : path, method : method})
+}
