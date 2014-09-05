@@ -15,7 +15,17 @@
 
 all: test-all
 
-test-all:
+test-all: \
+	test-generic \
+	test-syslog \
+	test-opencpe
+
+test-generic:
 	node generic_rpc_get.js
+
+test-syslog:
 	node syslog_rpc_edit_config.js
 	node syslog_rpc_get.js
+
+test-opencpe:
+	node opencpe_firmware_download.js
