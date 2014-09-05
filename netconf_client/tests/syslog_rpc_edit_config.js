@@ -23,8 +23,23 @@ var client = netconf_client.create({name: 'syslog_rpc_edit_config'}, function(er
 		process.exit(1)
 	}
 
-	var xml = "<edit-config xmlns:nc='urn:ietf:params:xml:ns:netconf:base:1.0'><target><running/></target><config>"+
-				"<syslog xmlns='urn:ietf:params:xml:ns:yang:ietf-syslog'><console-logging><logging-severity>critical</logging-severity><logging-severities xmlns:nc='urn:ietf:params:xml:ns:netconf:base:1.0' nc:operation='delete'><facility xmlns:syslogtypes='urn:ietf:params:xml:ns:yang:ietf-syslog-types'>syslogtypes:audit</facility></logging-severities></console-logging><file-logging><file-size>12</file-size><file-name>test1</file-name></file-logging></syslog></config></edit-config>"
+	var xml = "<edit-config xmlns:nc='urn:ietf:params:xml:ns:netconf:base:1.0'>" +
+			"<target><running/></target>"+
+			"<config>" +
+				"<syslog xmlns='urn:ietf:params:xml:ns:yang:ietf-syslog'>" +
+					"<console-logging>" +
+						"<logging-severity>critical</logging-severity>" +
+						"<logging-severities xmlns:nc='urn:ietf:params:xml:ns:netconf:base:1.0' nc:operation='delete'>" +
+							"<facility xmlns:syslogtypes='urn:ietf:params:xml:ns:yang:ietf-syslog-types'>syslogtypes:audit</facility>" +
+						"</logging-severities>" +
+					"</console-logging>" +
+					"<file-logging>" +
+						"<file-size>12</file-size>" +
+						"<file-name>test1</file-name>" +
+					"</file-logging>" +
+				"</syslog>" +
+			"</config>" +
+		"</edit-config>"
 
 	client.send(xml, function(error, reply)
 	{
