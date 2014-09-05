@@ -30,7 +30,7 @@ rpc_methods["get"] = function(oin, res)
 	debug.write(JSON.stringify(oin))
 	var data = {}
 
-	var filters = oin["filter"][0]
+	var filters = oin["filter"] ? oin["filter"][0] : []
 	for (f in filters)
 	{
 		debug.write("filter:" + f)
@@ -61,7 +61,7 @@ rpc_methods["get-config"] = function(oin, res)
 	debug.write(JSON.stringify(oin))
 	var data = {}
 
-	var filters = oin["filter"][0]
+	var filters = oin["filter"] ? oin["filter"][0] : []
 	for (f in filters)
 	{
 		debug.write("filter:" + f)
