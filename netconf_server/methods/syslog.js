@@ -19,6 +19,8 @@ var methods = netconf.create_default_methods()
 
 module.exports = methods
 
+methods["namespace"] = { "xmlns" : "urn:ietf:params:xml:ns:yang:ietf-syslog" }
+
 netconf.add_method(methods["edit-config"], "$..file-logging[*]", function(input)
 {
 	// console.log("file-logging")

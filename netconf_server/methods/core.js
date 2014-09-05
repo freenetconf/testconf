@@ -14,6 +14,7 @@
  */
 
 var fs = require('fs');
+var path = require('path');
 var json_path = require('JSONPath')
 var config = require('../../core/config')
 var debug = require('../../core/debug')
@@ -31,29 +32,70 @@ rpc_methods["get"] = function(oin, res)
 	var data = {}
 
 	var filters = oin["filter"] ? oin["filter"][0] : []
-	for (f in filters)
+
+	if (oin["filter"])
 	{
-		debug.write("filter:" + f)
-
-		var method = null
-		try
+		for (f in filters)
 		{
-			// TODO: trigger reload when needed
-			delete require.cache[__dirname + "/" + f + ".js"]
-			method = require(config.server_methods_dir + f + ".js")["get"]
-		}
-		catch(e)
-		{
-			debug.write(e, true)
+			debug.write("filter:" + f)
 
-			return res(netconf.rpc_error("rcp method '" + f + "' not found ", "operation-not-supported"))
+			var method = null
+			try
+			{
+				// TODO: trigger reload when needed
+				delete require.cache[__dirname + "/" + f + ".js"]
+				method = require(config.server_methods_dir + f + ".js")
+				method["get"].length
+			}
+			catch(e)
+			{
+				debug.write(e, true)
+
+				return res(netconf.rpc_error("rcp method '" + f + "' not found ", "operation-not-supported"))
+			}
+
+			data[f] = { '$' : method["namespace"] }
+			Object.assign(data[f], method["get"](filters[f]))
 		}
 
-		data[f] = { '$' : filters[f][0]['$'] }
-		Object.assign(data[f], method(filters[f]))
+		return res({'data' : data})
 	}
 
-	res({'data' : data})
+	else
+	fs.readdir(__dirname, function(error, files)
+	{
+		if (error)
+			return res(netconf.rpc_error("rcp method '" + f + "' not found ", "operation-failed"))
+
+		files.forEach(function(file)
+		{
+			if (file == "core.js")
+				return
+
+			var method = null
+			try
+			{
+				// TODO: trigger reload when needed
+				delete require.cache[__dirname + "/" + file]
+				method = require(config.server_methods_dir + file)
+				method["get"].length
+			}
+			catch(e)
+			{
+				debug.write(e, true)
+
+				return res(netconf.rpc_error("rcp method '" + f + "' not found ", "operation-not-supported"))
+			}
+
+			var module = path.basename(file, ".js")
+
+			data[module] = { '$' : method["namespace"] }
+			Object.assign(data[module], method["get"]())
+			console.log(data)
+		})
+
+		return res({'data' : data})
+	})
 }
 
 rpc_methods["get-config"] = function(oin, res)
@@ -62,29 +104,70 @@ rpc_methods["get-config"] = function(oin, res)
 	var data = {}
 
 	var filters = oin["filter"] ? oin["filter"][0] : []
-	for (f in filters)
+
+	if (oin["filter"])
 	{
-		debug.write("filter:" + f)
-
-		var method = null
-		try
+		for (f in filters)
 		{
-			// TODO: trigger reload when needed
-			delete require.cache[__dirname + "/" + f + ".js"]
-			method = require(config.server_methods_dir + f + ".js")["get-config"]
-		}
-		catch(e)
-		{
-			debug.write(e, true)
+			debug.write("filter:" + f)
 
-			return res(netconf.rpc_error("rcp method '" + f + "' not found ", "operation-not-supported"))
+			var method = null
+			try
+			{
+				// TODO: trigger reload when needed
+				delete require.cache[__dirname + "/" + f + ".js"]
+				method = require(config.server_methods_dir + f + ".js")
+				method["get-config"].length
+			}
+			catch(e)
+			{
+				debug.write(e, true)
+
+				return res(netconf.rpc_error("rcp method '" + f + "' not found ", "operation-not-supported"))
+			}
+
+			data[f] = { '$' : method["namespace"] }
+			Object.assign(data[f], method["get-config"](filters[f]))
 		}
 
-		data[f] = { '$' : filters[f][0]['$'] }
-		Object.assign(data[f], method(filters[f]))
+		return res({'data' : data})
 	}
 
-	res({'data' : data})
+	else
+	fs.readdir(__dirname, function(error, files)
+	{
+		if (error)
+			return res(netconf.rpc_error("rcp method '" + f + "' not found ", "operation-failed"))
+
+		files.forEach(function(file)
+		{
+			if (file == "core.js")
+				return
+
+			var method = null
+			try
+			{
+				// TODO: trigger reload when needed
+				delete require.cache[__dirname + "/" + file]
+				method = require(config.server_methods_dir + file)
+				method["get-config"].length
+			}
+			catch(e)
+			{
+				debug.write(e, true)
+
+				return res(netconf.rpc_error("rcp method '" + f + "' not found ", "operation-not-supported"))
+			}
+
+			var module = path.basename(file, ".js")
+
+			data[module] = { '$' : method["namespace"] }
+			Object.assign(data[module], method["get-config"]())
+			console.log(data)
+		})
+
+		return res({'data' : data})
+	})
 }
 
 rpc_methods["edit-config"] = function(oin, res)
