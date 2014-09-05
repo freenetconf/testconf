@@ -15,7 +15,7 @@
 
 var netconf_client = require('../netconf_client')
 
-var client = netconf_client.create(function(error)
+var client = netconf_client.create({name: 'syslog_rpc_edit_config'}, function(error)
 {
 	if (error)
 	{

@@ -15,7 +15,7 @@
 
 var netconf_client = require('../netconf_client')
 
-var client = netconf_client.create({host: '127.0.0.1'}, function(error)
+var client = netconf_client.create({name: 'generic_rpc_get'}, function(error)
 {
 	if (error)
 	{
