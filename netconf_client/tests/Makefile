@@ -18,3 +18,4 @@ all: test-all
 test-all:
 	node generic_rpc_get.js
 	node syslog_rpc_edit_config.js
+	node syslog_rpc_get.js
