@@ -91,7 +91,6 @@ rpc_methods["get"] = function(oin, res)
 
 			data[module] = { '$' : method["namespace"] }
 			Object.assign(data[module], method["get"]())
-			console.log(data)
 		})
 
 		return res({'data' : data})
@@ -163,7 +162,6 @@ rpc_methods["get-config"] = function(oin, res)
 
 			data[module] = { '$' : method["namespace"] }
 			Object.assign(data[module], method["get-config"]())
-			console.log(data)
 		})
 
 		return res({'data' : data})
