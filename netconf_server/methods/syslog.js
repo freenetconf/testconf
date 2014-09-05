@@ -15,11 +15,9 @@
 
 var netconf = require('../../core/netconf')
 
-var methods = {}
+var methods = netconf.create_default_methods()
 
 module.exports = methods
-
-methods["edit-config"] = {}
 
 netconf.add_method(methods["edit-config"], "$..file-logging[*]", function(input)
 {
@@ -38,3 +36,17 @@ netconf.add_method(methods["edit-config"], "$..console-logging[*]", function(inp
 	// { code : int, msg : string}
 	return { code : 0 }
 })
+
+methods["get"] = function(filter)
+{
+	//console.log(filter)
+
+	return { }
+}
+
+methods["get-config"] = function(filter)
+{
+	//console.log(filter)
+
+	return { }
+}

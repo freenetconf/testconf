@@ -19,18 +19,72 @@ var config = require('../../core/config')
 var debug = require('../../core/debug')
 var netconf = require('../../core/netconf')
 
+require('es6-shim')
+
 var rpc_methods = {}
 
 module.exports = rpc_methods
 
 rpc_methods["get"] = function(oin, res)
 {
-	res({"data" : ''})
+	debug.write(JSON.stringify(oin))
+	var data = {}
+
+	var filters = oin["filter"][0]
+	for (f in filters)
+	{
+		debug.write("filter:" + f)
+
+		var method = null
+		try
+		{
+			// TODO: trigger reload when needed
+			delete require.cache[__dirname + "/" + f + ".js"]
+			method = require(config.server_methods_dir + f + ".js")["get"]
+		}
+		catch(e)
+		{
+			debug.write(e, true)
+
+			return res(netconf.rpc_error("rcp method '" + f + "' not found ", "operation-not-supported"))
+		}
+
+		data[f] = { '$' : filters[f][0]['$'] }
+		Object.assign(data[f], method(filters[f]))
+	}
+
+	res({'data' : data})
 }
 
 rpc_methods["get-config"] = function(oin, res)
 {
-	res({"data" : ''})
+	debug.write(JSON.stringify(oin))
+	var data = {}
+
+	var filters = oin["filter"][0]
+	for (f in filters)
+	{
+		debug.write("filter:" + f)
+
+		var method = null
+		try
+		{
+			// TODO: trigger reload when needed
+			delete require.cache[__dirname + "/" + f + ".js"]
+			method = require(config.server_methods_dir + f + ".js")["get-config"]
+		}
+		catch(e)
+		{
+			debug.write(e, true)
+
+			return res(netconf.rpc_error("rcp method '" + f + "' not found ", "operation-not-supported"))
+		}
+
+		data[f] = { '$' : filters[f][0]['$'] }
+		Object.assign(data[f], method(filters[f]))
+	}
+
+	res({'data' : data})
 }
 
 rpc_methods["edit-config"] = function(oin, res)

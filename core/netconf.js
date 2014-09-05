@@ -202,15 +202,15 @@ exports.capabilities_from_yang = function(yang_dir)
 
 exports.rpc_error = function(msg, tag, type, severity)
 {
-	var rpc_error = {}
-	rpc_error["error-message"] = msg || ""
-	rpc_error["error-type"] = type || "rpc"
-	rpc_error["error-tag"] = tag || "operation-failed"
-	rpc_error["error-severity"] = severity || "error"
+	var rpc_error = { 'rpc-error' : {}}
+	rpc_error["rpc-error"]["error-type"] = type || "rpc"
+	rpc_error["rpc-error"]["error-tag"] = tag || "operation-failed"
+	rpc_error["rpc-error"]["error-severity"] = severity || "error"
+	rpc_error["rpc-error"]["error-message"] =  {'$' : {'xml:lang' : 'en'} , '_' : (msg || "")  }
 
 	if (rpc_error_tag.filter(function(e)
 	{
-		if (e == rpc_error["error-tag"])
+		if (e == rpc_error["rpc-error"]["error-tag"])
 			return e
 
 	}).length == 0)
@@ -222,9 +222,20 @@ exports.rpc_error = function(msg, tag, type, severity)
 	return rpc_error
 }
 
+exports.create_default_methods = function()
+{
+	var methods = {}
+	methods["get"] = {}
+	methods["get-config"] = {}
+	methods["edit-config"] = {}
+
+	return methods
+}
+
 exports.add_method = function(methods, path, method)
 {
 	methods = methods || {}
 	methods["paths"] = methods["paths"] || []
 	methods["paths"].push({path : path, method : method})
 }
+
