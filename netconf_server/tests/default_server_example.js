@@ -23,6 +23,10 @@ var server = netconf_server.create({name : 'default_server_example'}, function(e
 		return
 	}
 
+	rpc_methods["firmware-download"] = function(data, response)
+	{
+		response({'job-id' : Math.floor(Math.random() * 100)})
+	}
 })
 
 server.on('rpc', function(rpc)
