@@ -1,0 +1,36 @@
+{
+	"name": "testconf",
+	"description": "NETCONF testing suite",
+	"homepage": "http://www.freenetconf.org/",
+	"version": "0.0.0",
+	"repository" : {
+		"type" : "git",
+		"url" : "https://github.com/freenetconf/testconf.git"
+	},
+	"bugs" : {
+		"url" : "https://github.com/freenetconf/testconf/issues"
+	},
+	"licenses" : [
+		{
+			"type" : "GPL-2.0+",
+			"url" : "https://github.com/freenetconf/testconf/raw/master/COPYING"
+		}
+	],
+	"dependencies": {
+		"xml2js": "0.4.4",
+		"JSONPath": "0.10.0",
+		"ssh2": "0.3.6",
+		"ssh": "1.7.3",
+		"es6-shim": "0.17.0"
+	},
+	"engine": "node >= 0.10.31",
+	"contributors": [
+		{
+			"name": "Petar Koretic",
+			"email": "petar.koretic@sartura.hr"
+		}, {
+			"name": "Luka Perkov",
+			"email": "luka.perkov@sartura.hr"
+		}
+	]
+}
