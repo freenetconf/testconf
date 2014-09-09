@@ -30,6 +30,7 @@ config.default_log_file = "/tmp/testconf.log"
 
 config.server = {}
 config.server.log_name = __dirname + "/../logs/server.log"
+config.server.auth_retries = 3
 
 config.client = {}
 config.client.log_name = __dirname + "/../logs/client.log"

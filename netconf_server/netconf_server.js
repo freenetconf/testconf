@@ -87,10 +87,14 @@ var server = function(options, callback)
 
 		ssh.on('connection', function(session)
 		{
+			var auth_retries = 0
+
 			debug.write('.. received connection', true, self.log_file)
 
 			session.on('auth', function(message)
 			{
+
+				debug.write('... authentication type: ' + message.subtype, true, self.log_file)
 				if (message.subtype == 'publickey' &&
 					message.authUser == self.user &&
 					message.comparePublicKey(fs.readFileSync(config.keys_dir + 'admin_rsa.pub')))
@@ -108,8 +112,12 @@ var server = function(options, callback)
 				}
 
 				message.replyDefault()
-				debug.write('... authentication failed', true, self.log_file)
-				callback('error', 'authentication failed for "' + self.user + '"')
+
+				if (auth_retries++ > config.server.auth_retries)
+				{
+					debug.write('... authentication failed', true, self.log_file)
+					return callback('error', 'authentication failed')
+				}
 			})
 
 			session.on('channel', function(channel)
@@ -200,9 +208,7 @@ var server = function(options, callback)
 									}
 								}
 
-								callback(null, self.rpc_methods)
-
-								return
+								return callback(null, self.rpc_methods)
 							}
 
 							if (data["rpc"])
