@@ -19,8 +19,8 @@ var server = netconf_server.create({name : 'custom_rpc_power_example'}, function
 {
 	if (error)
 	{
-		// console.log(error)
-		return
+		console.error(error)
+		process.exit(1)
 	}
 
 	// add custom rpc method
@@ -35,10 +35,10 @@ var server = netconf_server.create({name : 'custom_rpc_power_example'}, function
 
 server.on('rpc', function(rpc)
 {
-	// console.log(rpc)
 })
 
 server.on('error', function(error)
 {
-	// console.log(error)
+	console.log(error)
+	process.exit(1)
 })

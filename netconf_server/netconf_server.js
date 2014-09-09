@@ -52,8 +52,10 @@ var server = function(options, callback)
 
 	if (!self.log_file)
 	{
-		console.error("unable to create log file: '" + self.log_name + '"')
-		process.exit(1)
+		var err_msg = "unable to create log file: '" + self.log_name + '"'
+		console.error(err_msg)
+
+		return callback(err_msg)
 	}
 
 	debug.write('. executing test named "' + this.name + '"', true, self.log_file)

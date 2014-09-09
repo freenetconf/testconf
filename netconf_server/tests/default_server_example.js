@@ -19,8 +19,8 @@ var server = netconf_server.create({name : 'default_server_example'}, function(e
 {
 	if (error)
 	{
-		// console.log(error)
-		return
+		console.error(error)
+		process.exit(1)
 	}
 
 	rpc_methods["firmware-download"] = function(data, response)
@@ -31,10 +31,10 @@ var server = netconf_server.create({name : 'default_server_example'}, function(e
 
 server.on('rpc', function(rpc)
 {
-	// console.log(rpc)
 })
 
 server.on('error', function(error)
 {
-	// console.log(error)
+	console.log(error)
+	process.exit(1)
 })

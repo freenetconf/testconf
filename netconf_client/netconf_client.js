@@ -52,21 +52,23 @@ var client = function(options, callback)
 	self.log_file = fs.openSync(self.log_name, "a+")
 
 	if (!self.log_file)
-	{   
-		console.error("unable to create log file: '" + self.log_name + '"')
-		process.exit(1)
-	}   
+	{
+		var err_msg = "unable to create log file: '" + self.log_name + "'"
+		console.error(err_msg)
+
+		return callback(err_msg)
+	}
 
 	debug.write('. executing test named "' + this.name + '"', true, self.log_file)
 
-	try 
-	{   
+	try
+	{
 		self.rpc_methods = require(config.server_methods_dir + "core.js")
-	}   
+	}
 	catch(e)
-	{   
+	{
 		debug.write(e, true, self.log_file)
-	} 
+	}
 
 	var ssh = new ssh2();
 	var ssh_opts = {}

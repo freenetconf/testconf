@@ -53,6 +53,8 @@ client.on('rpc-reply', function(error)
 
 client.on('error', function(error)
 {
+	console.error(error)
+	process.exit(1)
 })
 
 client.on('end', function(error)
