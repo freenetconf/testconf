@@ -228,21 +228,28 @@ var server = function(options, callback)
 
 									if (typeof resp === 'string')
 									{
-										// TODO: extract arguments
-										xml_message = netconf.create_framing.chunkg(resp.length) + netconf.rpc_reply_header(connection.netconf_base) + resp + netconf.rpc_reply_end + netconf.ending[connection.netconf_base]
+										xml2js.parseString(resp, function(error, data)
+										{
+											rpc_method_send(error ? {"rpc-error" : error} : data)
+										})
 									}
 
 									else
 									{
-										rpc_reply = {"rpc-reply": resp}
-										rpc_reply["rpc-reply"].$ = data.rpc.$
-
-										xml_message = builder.buildObject(rpc_reply)
-										if (connection.netconf_base == 1)
-											xml_message = netconf.create_framing_chunk(xml_message.length) + xml_message
-
-										xml_message += netconf.ending[connection.netconf_base]
+										rpc_method_send(resp)
 									}
+								}
+
+								function rpc_method_send(resp)
+								{
+									rpc_reply = {"rpc-reply": resp}
+									rpc_reply["rpc-reply"].$ = data.rpc.$
+
+									xml_message = builder.buildObject(rpc_reply)
+									if (connection.netconf_base == 1)
+										xml_message = netconf.create_framing_chunk(xml_message.length) + xml_message
+
+									xml_message += netconf.ending[connection.netconf_base]
 
 									self.emit('rpc', data['rpc'])
 
