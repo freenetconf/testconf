@@ -84,7 +84,7 @@ exports.close = function()
 var netconf_rpc_header = exports.rpc_header = function(base, message_id)
 {
 	base = base || 0
-	message_id = message_id || 0
+	message_id = message_id || 1
 
 	return '<rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.' + base + '" message-id="'+ message_id + '">'
 }
@@ -92,7 +92,7 @@ var netconf_rpc_header = exports.rpc_header = function(base, message_id)
 var netconf_rpc_reply_header = exports.rpc_reply_header = function(base, message_id)
 {
 	base = base || 0
-	message_id = message_id || 0
+	message_id = message_id || 1
 
 	return '<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.'+ base + '" message-id="'+ message_id + '">'
 }
