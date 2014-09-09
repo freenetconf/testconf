@@ -36,12 +36,27 @@ var server = function(options, callback)
 	this.port = opts.port || config.netconf.port
 	this.user = opts.user || config.netconf.user
 	this.pass = opts.pass || config.netconf.pass
+	this.log_name = opts.log_name || config.server.log_name
 	this.ssh_key = opts.ssh_key || null
 	this.send_hello_message = opts.send_hello_message || true
 	this.rpc_methods = {}
+	this.log_file = null
+
 	var self = this
 
-	debug.write('. executing test named "' + this.name + '"', true);
+	var ssh_channel = null
+
+	events.EventEmitter.call(this);
+
+	self.log_file = fs.openSync(self.log_name, "a+")
+
+	if (!self.log_file)
+	{
+		console.error("unable to create log file: '" + self.log_name + '"')
+		process.exit(1)
+	}
+
+	debug.write('. executing test named "' + this.name + '"', true, self.log_file)
 
 	try
 	{
@@ -49,16 +64,13 @@ var server = function(options, callback)
 	}
 	catch(e)
 	{
-		debug.write(e, true)
+		debug.write(e, true, self.log_file)
 	}
 
-	events.EventEmitter.call(this);
+	debug.write('.. reading yang directory', true, self.log_file);
 
-	debug.write('.. reading yang directory', true);
+	var capabilities = netconf.capabilities_from_yang(config.yang_dir, self.log_file)
 
-	var capabilities = netconf.capabilities_from_yang(config.yang_dir)
-
-	var ssh_channel = null
 	var ssh = libssh.createServer
 	({
 		hostRsaKeyFile : config.keys_dir + 'ssh_host_rsa_key',
@@ -69,11 +81,11 @@ var server = function(options, callback)
 
 	ssh.on('ready', function()
 	{
-		debug.write('.. listening on ' + self.host + ":" + self.port, true)
+		debug.write('.. listening on ' + self.host + ":" + self.port, true, self.log_file)
 
 		ssh.on('connection', function(session)
 		{
-			debug.write('.. received connection', true)
+			debug.write('.. received connection', true, self.log_file)
 
 			session.on('auth', function(message)
 			{
@@ -81,7 +93,7 @@ var server = function(options, callback)
 					message.authUser == self.user &&
 					message.comparePublicKey(fs.readFileSync(config.keys_dir + 'admin_rsa.pub')))
 				{
-					debug.write('... authenticated "' + self.user + '" using public key', true)
+					debug.write('... authenticated "' + self.user + '" using public key', true, self.log_file)
 					return message.replyAuthSuccess()
 				}
 
@@ -89,12 +101,12 @@ var server = function(options, callback)
 					message.authUser == self.user &&
 					message.authPassword == self.pass)
 				{
-					debug.write('... authenticated "' + self.user + '" using password', true)
+					debug.write('... authenticated "' + self.user + '" using password', true, self.log_file)
 					return message.replyAuthSuccess()
 				}
 
 				message.replyDefault()
-				debug.write('... authentication failed', true)
+				debug.write('... authentication failed', true, self.log_file)
 				callback('error', 'authentication failed for "' + self.user + '"')
 			})
 
@@ -114,51 +126,51 @@ var server = function(options, callback)
 					if (message.subsystem != 'netconf')
 					{
 						message.replyDefault()
-						debug.write('... tried to request non-netconf subsytem: "' + message.subsystem + '"', true)
+						debug.write('... tried to request non-netconf subsytem: "' + message.subsystem + '"', true, self.log_file)
 						return callback('error', 'tried to request non-netconf subsytem: "' + message.subsystem + '"')
 					}
 
-					debug.write('... acquired netconf subsytem', true)
+					debug.write('... acquired netconf subsytem', true, self.log_file)
 
 					message.replySuccess()
 
 					if (self.send_hello_message)
 					{
 						var h = netconf.hello(capabilities, connection.session_id)
-						debug.write('.... sending hello message', true)
+						debug.write('.... sending hello message', true, self.log_file)
 
 						channel.write(h)
 
-						debug.write('<<<< msg netconf (hello) <<<<', false);
-						debug.write(h, false);
-						debug.write('---- msg netconf (hello) ----', false);
+						debug.write('<<<< msg netconf (hello) <<<<', false, self.log_file)
+						debug.write(h, false, self.log_file)
+						debug.write('---- msg netconf (hello) ----', false, self.log_file)
 					}
 				})
 
 				channel.on('data', function(data)
 				{
-					debug.write('.... received (partial) msg, len: ' + data.toString().length, false);
-					debug.write('<<<< partial msg <<<<', false);
-					debug.write(data.toString(), false);
-					debug.write('---- partial msg ----', false);
+					debug.write('.... received (partial) msg, len: ' + data.toString().length, false, self.log_file)
+					debug.write('<<<< partial msg <<<<', false, self.log_file)
+					debug.write(data.toString(), false, self.log_file)
+					debug.write('---- partial msg ----', false, self.log_file)
 
 					connection.buffer += data;
 
-					debug.write('.... processing incoming request', true);
+					debug.write('.... processing incoming request', true, self.log_file)
 					netconf.process_message(connection, process_request)
 
 					function process_request(request)
 					{
-						debug.write('<<<< msg netconf <<<<', false);
-						debug.write(request, false);
-						debug.write('---- msg netconf ----', false);
+						debug.write('<<<< msg netconf <<<<', false, self.log_file)
+						debug.write(request, false, self.log_file)
+						debug.write('---- msg netconf ----', false, self.log_file)
 
 						xml2js.parseString(request, function(error, data)
 						{
 							if (error)
 							{
-								debug.write('.... xml parsing failed', true);
-								debug.write(error, false);
+								debug.write('.... xml parsing failed', true, self.log_file)
+								debug.write(error, false, self.log_file)
 
 								return self.emit('error', error)
 							}
@@ -167,18 +179,18 @@ var server = function(options, callback)
 							{
 								if (connection.netconf_ready)
 								{
-									debug.write('..... hello received at the wrong stage', true);
+									debug.write('..... hello received at the wrong stage', true, self.log_file)
 									return self.emit('error', 'hello received at the wrong stage')
 								}
 
-								debug.write('..... hello', true);
+								debug.write('..... hello', true, self.log_file)
 								connection.netconf_ready = 1
 
 								var capabilities = data["hello"]["capabilities"][0].capability;
 
 								for (var i in capabilities)
 								{
-									debug.write('...... capability - ' + capabilities[i], true);
+									debug.write('...... capability - ' + capabilities[i], true, self.log_file)
 
 									if (capabilities[i] == 'urn:ietf:params:netconf:base:1.1')
 									{
@@ -234,13 +246,13 @@ var server = function(options, callback)
 
 									self.emit('rpc', data['rpc'])
 
-									debug.write('..... sending rpc', true);
+									debug.write('..... sending rpc', true, self.log_file)
 
 									channel.write(xml_message)
 
-									debug.write('>>>> msg netconf >>>>', false);
-									debug.write(xml_message, false);
-									debug.write('---- msg netconf ----', false);
+									debug.write('>>>> msg netconf >>>>', false, self.log_file)
+									debug.write(xml_message, false, self.log_file)
+									debug.write('---- msg netconf ----', false, self.log_file)
 								}
 							}
 						})
@@ -249,14 +261,14 @@ var server = function(options, callback)
 
 				channel.on('end', function()
 				{
-					debug.write('.. ssh channel closed', true);
-					debug.end();
+					debug.write('.. ssh channel closed', true, self.log_file)
+					fs.closeSync(self.log_file);
 				})
 
 				channel.on('error', function(error)
 				{
-					debug.write('.. ssh channel closed due to error', true);
-					debug.end();
+					debug.write('.. ssh channel closed due to error', true, self.log_file)
+					fs.closeSync(self.log_file);
 				})
 			})
 		})

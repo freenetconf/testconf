@@ -14,23 +14,23 @@
  */
 
 var net = require('net');
+var config = require('./config')
+var fs = require('fs')
 
-var socket = net.connect({ path: '/tmp/testconf.sock' });
-
-socket.on('error', function(e) {
-	socket.end();
-});
-
-exports.write = function(msg, console_on) {
+exports.write = function(msg, to_console, to_file)
+{
 	if (!msg)
 		return
 
-	if (console_on)
+	if (to_console)
 		console.log(msg)
 
-	socket.write(msg + '\n')
-}
-
-exports.end = function() {
-	socket.end();
+	fs.write(to_file, msg + require('os').EOL, null, 'utf8', function(error, written)
+	{
+		if (error)
+		{
+			console.error(error)
+			process.exit(1)
+		}
+	})
 }

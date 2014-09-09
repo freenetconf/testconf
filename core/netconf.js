@@ -168,7 +168,7 @@ exports.create_rpc_reply_message = function(message, base, message_id)
 	return (base == 1 ? create_framing_chunk(message.length) + r_message : r_message)
 }
 
-exports.capabilities_from_yang = function(yang_dir)
+exports.capabilities_from_yang = function(yang_dir, to_file)
 {
 	var capabilities = ''
 	var files = fs.readdirSync(yang_dir)
@@ -178,7 +178,7 @@ exports.capabilities_from_yang = function(yang_dir)
 
 	files.forEach(function(file)
 	{
-		debug.write('... ' + file, true);
+		debug.write('... ' + file, true, to_file);
 
 		file = path.basename(file, '.yang')
 
@@ -215,8 +215,9 @@ exports.rpc_error = function(msg, tag, type, severity)
 
 	}).length == 0)
 	{
-		debug.write('... rpc-error: tag must be one of:' , true)
-		debug.write(rpc_error_tag , true)
+		console.error('rpc-error: tag must be one of:')
+		console.error(rpc_error_tag)
+		process.exit(1)
 	}
 
 	return rpc_error

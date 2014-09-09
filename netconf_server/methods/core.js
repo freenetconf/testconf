@@ -28,7 +28,6 @@ module.exports = rpc_methods
 
 rpc_methods["get"] = function(oin, res)
 {
-	debug.write(JSON.stringify(oin))
 	var data = {}
 
 	var filters = oin["filter"] ? oin["filter"][0] : []
@@ -37,8 +36,6 @@ rpc_methods["get"] = function(oin, res)
 	{
 		for (f in filters)
 		{
-			debug.write("filter:" + f)
-
 			var method = null
 			try
 			{
@@ -49,9 +46,8 @@ rpc_methods["get"] = function(oin, res)
 			}
 			catch(e)
 			{
-				debug.write(e, true)
-
-				return res(netconf.rpc_error("rcp method '" + f + "' not found ", "operation-not-supported"))
+				console.error(e)
+				process.exit(1)
 			}
 
 			data[f] = { '$' : method["namespace"] }
@@ -82,7 +78,7 @@ rpc_methods["get"] = function(oin, res)
 			}
 			catch(e)
 			{
-				debug.write(e, true)
+				console.error(e)
 
 				return res(netconf.rpc_error("rcp method '" + f + "' not found ", "operation-not-supported"))
 			}
@@ -99,7 +95,6 @@ rpc_methods["get"] = function(oin, res)
 
 rpc_methods["get-config"] = function(oin, res)
 {
-	debug.write(JSON.stringify(oin))
 	var data = {}
 
 	var filters = oin["filter"] ? oin["filter"][0] : []
@@ -108,8 +103,6 @@ rpc_methods["get-config"] = function(oin, res)
 	{
 		for (f in filters)
 		{
-			debug.write("filter:" + f)
-
 			var method = null
 			try
 			{
@@ -120,7 +113,7 @@ rpc_methods["get-config"] = function(oin, res)
 			}
 			catch(e)
 			{
-				debug.write(e, true)
+				console.error(e)
 
 				return res(netconf.rpc_error("rcp method '" + f + "' not found ", "operation-not-supported"))
 			}
@@ -153,7 +146,7 @@ rpc_methods["get-config"] = function(oin, res)
 			}
 			catch(e)
 			{
-				debug.write(e, true)
+				console.error(e)
 
 				return res(netconf.rpc_error("rcp method '" + f + "' not found ", "operation-not-supported"))
 			}
@@ -183,12 +176,10 @@ rpc_methods["edit-config"] = function(oin, res)
 		}
 		catch(e)
 		{
-			debug.write(e, true)
+			console.error(e)
 
 			return res(netconf.rpc_error("rcp method '" + c + "' not found ", "operation-not-supported"))
 		}
-
-		debug.write(JSON.stringify(configs[c]))
 
 		method.paths.forEach(function(path)
 		{

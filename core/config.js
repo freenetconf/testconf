@@ -22,6 +22,14 @@ config.server_methods_dir = __dirname + "/../netconf_server/methods/"
 
 config.netconf = {}
 config.netconf.host = '127.0.0.1'
-config.netconf.port = 830
+config.netconf.port = 1830
 config.netconf.user = 'admin'
 config.netconf.pass = 'admin'
+
+config.default_log_file = "/tmp/testconf.log"
+
+config.server = {}
+config.server.log_name = __dirname + "/../logs/server.log"
+
+config.client = {}
+config.client.log_name = __dirname + "/../logs/client.log"
