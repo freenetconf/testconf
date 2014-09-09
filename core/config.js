@@ -22,7 +22,7 @@ config.server_methods_dir = __dirname + "/../netconf_server/methods/"
 
 config.netconf = {}
 config.netconf.host = '127.0.0.1'
-config.netconf.port = 1830
+config.netconf.port = 830
 config.netconf.user = 'admin'
 config.netconf.pass = 'admin'
 
