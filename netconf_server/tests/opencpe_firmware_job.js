@@ -15,7 +15,7 @@
 
 var netconf_server = require('../netconf_server')
 
-var server = netconf_server.create({name : 'default_server_example'}, function(error, rpc_methods)
+var server = netconf_server.create(function(error, rpc_methods)
 {
 	if (error)
 	{

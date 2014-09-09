@@ -17,6 +17,7 @@ var fs = require('fs');
 var xml2js = require('xml2js')
 var util = require('util')
 var events = require("events")
+var path = require('path')
 
 var libssh = require('ssh')
 var netconf = require('../core/netconf')
@@ -31,7 +32,7 @@ var server = function(options, callback)
 {
 	var opts = options || {}
 
-	this.name = opts.name || 'unknown'
+	this.name = opts.name || path.basename(module.parent.filename)
 	this.host = opts.host || config.netconf.host
 	this.port = opts.port || config.netconf.port
 	this.user = opts.user || config.netconf.user

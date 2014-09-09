@@ -19,6 +19,7 @@ var xml2js = require('xml2js')
 var builder = new xml2js.Builder();
 var events = require("events")
 var util = require('util')
+var path = require('path')
 
 var netconf = require('../core/netconf')
 var debug = require('../core/debug')
@@ -27,7 +28,7 @@ var config = require('../core/config')
 var client = function(options, callback)
 {
 	var opts = options || {}
-	this.name = opts.name || 'unknown'
+	this.name = opts.name || path.basename(module.parent.filename)
 	this.host = opts.host || config.netconf.host
 	this.port = opts.port || config.netconf.port
 	this.user = opts.user || config.netconf.user

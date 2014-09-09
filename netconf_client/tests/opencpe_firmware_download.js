@@ -15,7 +15,7 @@
 
 var netconf_client = require('../netconf_client')
 
-var client = netconf_client.create({name: 'opencpe_firmware_download'}, function(error)
+var client = netconf_client.create(function(error)
 {
 	if (error)
 	{
