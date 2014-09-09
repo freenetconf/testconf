@@ -11,3 +11,31 @@ It can be used to run interoperability tests as well.
 Extending _testconf_ with your custom defined tests shortens the time spent on
 repetitive tasks and helps to pinpoint bugs. We encourage you to send us your
 tests or tell us about the features that you would like to have tested.
+
+### Installation
+
+#### Prerequisites
+    # Ubuntu (14.04)
+    apt-get install nodejs npm libkrb5-dev libssl-dev
+    sudo ln -sf /usr/bin/nodejs /usr/bin/node
+    
+    # Arch Linux
+    export PYTHON=python2
+    
+#### Installation
+    git clone https://github.com/freenetconf/testconf.git
+    cd testconf
+    npm install
+
+### Running default tests
+
+#### Start default netconf test server
+    # sudo is required if port in config (core/config.js) is 830 (default)
+    node netconf_server/tests/default_server_example.js
+    
+#### Run all client tests
+    cd netconf_client/tests
+    make
+    
+#### Trace
+    Test details can be found in 'logs' directory.
