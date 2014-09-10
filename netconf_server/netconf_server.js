@@ -232,9 +232,10 @@ var server = function(options, callback)
 
 									if (!resp)
 									{
-										resp = {"rpc-error" : ''}
+										resp = netconf.rpc_error("method failed", "operation-not-supported")
 									}
 
+									// raw xml message
 									if (typeof resp === 'string')
 									{
 										xml2js.parseString(resp, function(error, data)
@@ -243,6 +244,7 @@ var server = function(options, callback)
 										})
 									}
 
+									// javascript object message
 									else
 									{
 										rpc_method_send(resp)
