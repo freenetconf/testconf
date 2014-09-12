@@ -280,12 +280,12 @@ var server = function(options, callback)
 				channel.on('end', function()
 				{
 					debug.write('.. ssh channel closed', true, self.log_file)
-					fs.closeSync(self.log_file);
 				})
 
 				channel.on('error', function(error)
 				{
 					debug.write('.. ssh channel closed due to error', true, self.log_file)
+					self.emit('error', error)
 					fs.closeSync(self.log_file);
 				})
 			})
