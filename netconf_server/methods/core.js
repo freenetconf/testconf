@@ -182,8 +182,10 @@ rpc_methods["edit-config"] = function(oin, res)
 			return res(netconf.rpc_error("rcp method '" + c + "' not found ", "operation-not-supported"))
 		}
 
-		method.paths.forEach(function(path)
+		for (var p in paths)
 		{
+			var path = paths[p]
+
 			var res = json_path.eval(configs[c], path.path)
 			if (res.length && path.method)
 			{
@@ -191,7 +193,7 @@ rpc_methods["edit-config"] = function(oin, res)
 				if (rc && rc.code)
 					return res(netconf.rpc_error(rc.msg, "operation-failed"))
 			}
-		})
+		}
 	}
 
 	res({"ok" : ''})
