@@ -1,0 +1,49 @@
+module power-control {
+
+    namespace
+        "urn:ietf:params:xml:ns:yang:power-control";
+
+    prefix
+        "pwrc";
+
+    description
+        "This module defines RPCs for managing ZigBee powered device";
+
+    revision "2014-07-15" {
+        description
+            "Version 0.1 -- Initial version.";
+    }
+
+    rpc power {
+        description
+            "send device power signal";
+
+        input {
+
+            leaf action {
+
+                type enumeration {
+                    enum on {
+                        description
+                            "send device power on signal";
+                    }
+                    enum off {
+                        description
+                            "send device power off signal";
+                    }
+                    enum status {
+                        description
+                            "get device power status";
+                    }
+                }
+            }
+        }
+
+        output {
+            leaf status {
+                type boolean;
+            }
+        }
+    }
+}
+
