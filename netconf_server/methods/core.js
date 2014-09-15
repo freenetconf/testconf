@@ -187,7 +187,7 @@ rpc_methods["edit-config"] = function(oin, res)
 			if (res.length && path.method)
 			{
 				var rc = path.method(res)
-				if (rc.code)
+				if (rc && rc.code)
 					return res(netconf.rpc_error(rc.msg, "operation-failed"))
 			}
 		})
