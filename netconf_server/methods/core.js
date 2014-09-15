@@ -47,7 +47,8 @@ rpc_methods["get"] = function(oin, res)
 			catch(e)
 			{
 				console.error(e)
-				process.exit(1)
+
+				return res(netconf.rpc_error("rcp method '" + f + "' not found ", "operation-not-supported"))
 			}
 
 			data[f] = { '$' : method["namespace"] }
