@@ -218,12 +218,30 @@ var server = function(options, callback)
 								var rpc_reply = {}
 								var xml_message = ''
 
+								// handle core modules
 								for (var method in self.rpc_methods)
 								{
 									if (method in data["rpc"])
 									{
 										self.rpc_methods[method](data["rpc"][method][0], rpc_method_call)
-										break
+										return
+									}
+								}
+
+								// handle generated modules
+								var files = fs.readdirSync(config.server_methods_dir)
+								for (var f in files)
+								{
+									var file = files[f]
+
+									var methods = require(config.server_methods_dir + file)
+									for (var method in methods)
+									{
+										if (method in data["rpc"])
+										{
+											methods[method](data["rpc"][method][0], rpc_method_call)
+											return
+										}
 									}
 								}
 
