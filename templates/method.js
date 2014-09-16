@@ -13,7 +13,7 @@
  * along with testconf. If not, see <http://www.gnu.org/licenses/>.
  */
 
-var netconf = require(__dirname + '/../../core/netconf')
+var netconf = require('./../../core/netconf')
 
 var methods = netconf.create_default_methods()
 

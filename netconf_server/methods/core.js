@@ -14,7 +14,7 @@
  */
 
 var fs = require('fs');
-var path = require('path');
+var _path = require('path');
 var json_path = require('JSONPath')
 var config = require('../../core/config')
 var debug = require('../../core/debug')
@@ -32,17 +32,18 @@ rpc_methods["get"] = function(oin, res)
 
 	var filters = oin["filter"] ? oin["filter"][0] : []
 
+	// return specific content from filtered modules
 	if (oin["filter"])
 	{
-		for (f in filters)
+		for (var f in filters)
 		{
 			var method = null
 			try
 			{
 				// TODO: trigger reload when needed
 				delete require.cache[__dirname + "/" + f + ".js"]
-				method = require(config.server_methods_dir + f + ".js")
-				method["get"].length
+				method = require(config.server_methods_dir + f + ".js")["get"]
+				method["paths"].length
 			}
 			catch(e)
 			{
@@ -52,22 +53,41 @@ rpc_methods["get"] = function(oin, res)
 			}
 
 			data[f] = { '$' : method["namespace"] }
-			Object.assign(data[f], method["get"](filters[f]))
+
+			for (var p in method.paths)
+			{
+				var path = method.paths[p]
+
+				var method_call = json_path.eval(filters[f], path.path)
+				if (method_call.length && path.method)
+				{
+					var rs = path.method(method_call)
+					if (typeof rs === "string")
+						return res(netconf.rpc_error(rs, "operation-failed"))
+
+					Object.assign(data[f], rs)
+				}
+			}
 		}
 
 		return res({'data' : data})
 	}
 
+	// return all content from all modules
 	else
 	fs.readdir(__dirname, function(error, files)
 	{
 		if (error)
-			return res(netconf.rpc_error("rcp method '" + f + "' not found ", "operation-failed"))
+			return res(netconf.rpc_error("internal error - unable to read modules dir", "operation-failed"))
 
-		files.forEach(function(file)
+		for (var f in files)
 		{
+			var file = files[f]
+
 			if (file == "core.js")
-				return
+				continue
+
+			console.log(file)
 
 			var method = null
 			try
@@ -75,20 +95,30 @@ rpc_methods["get"] = function(oin, res)
 				// TODO: trigger reload when needed
 				delete require.cache[__dirname + "/" + file]
 				method = require(config.server_methods_dir + file)
-				method["get"].length
 			}
 			catch(e)
 			{
 				console.error(e)
 
-				return res(netconf.rpc_error("rcp method '" + f + "' not found ", "operation-not-supported"))
+				return res(netconf.rpc_error("rcp method not found ", "operation-not-supported"))
 			}
 
-			var module = path.basename(file, ".js")
+			var module = _path.basename(file, ".js")
 
 			data[module] = { '$' : method["namespace"] }
-			Object.assign(data[module], method["get"]())
-		})
+
+			if (method["get"].paths)
+			for (var p in method["get"].paths)
+			{
+				var path = method["get"].paths[p]
+
+				var rs = path.method('')
+				if (typeof rs === "string")
+					return res(netconf.rpc_error(rs, "operation-failed"))
+
+				Object.assign(data[module], rs)
+			}
+		}
 
 		return res({'data' : data})
 	})
@@ -100,17 +130,18 @@ rpc_methods["get-config"] = function(oin, res)
 
 	var filters = oin["filter"] ? oin["filter"][0] : []
 
+	// return specific content from filtered modules
 	if (oin["filter"])
 	{
-		for (f in filters)
+		for (var f in filters)
 		{
 			var method = null
 			try
 			{
 				// TODO: trigger reload when needed
 				delete require.cache[__dirname + "/" + f + ".js"]
-				method = require(config.server_methods_dir + f + ".js")
-				method["get-config"].length
+				method = require(config.server_methods_dir + f + ".js")["get-config"]
+				method["paths"].length
 			}
 			catch(e)
 			{
@@ -120,22 +151,41 @@ rpc_methods["get-config"] = function(oin, res)
 			}
 
 			data[f] = { '$' : method["namespace"] }
-			Object.assign(data[f], method["get-config"](filters[f]))
+
+			for (var p in method.paths)
+			{
+				var path = method.paths[p]
+
+				var method_call = json_path.eval(filters[f], path.path)
+				if (method_call.length && path.method)
+				{
+					var rs = path.method(method_call)
+					if (typeof rs === "string")
+						return res(netconf.rpc_error(rs, "operation-failed"))
+
+					Object.assign(data[f], rs)
+				}
+			}
 		}
 
 		return res({'data' : data})
 	}
 
+	// return all content from all modules
 	else
 	fs.readdir(__dirname, function(error, files)
 	{
 		if (error)
-			return res(netconf.rpc_error("rcp method '" + f + "' not found ", "operation-failed"))
+			return res(netconf.rpc_error("internal error - unable to read modules dir", "operation-failed"))
 
-		files.forEach(function(file)
+		for (var f in files)
 		{
+			var file = files[f]
+
 			if (file == "core.js")
-				return
+				continue
+
+			console.log(file)
 
 			var method = null
 			try
@@ -143,20 +193,30 @@ rpc_methods["get-config"] = function(oin, res)
 				// TODO: trigger reload when needed
 				delete require.cache[__dirname + "/" + file]
 				method = require(config.server_methods_dir + file)
-				method["get-config"].length
 			}
 			catch(e)
 			{
 				console.error(e)
 
-				return res(netconf.rpc_error("rcp method '" + f + "' not found ", "operation-not-supported"))
+				return res(netconf.rpc_error("rcp method not found ", "operation-not-supported"))
 			}
 
-			var module = path.basename(file, ".js")
+			var module = _path.basename(file, ".js")
 
 			data[module] = { '$' : method["namespace"] }
-			Object.assign(data[module], method["get-config"]())
-		})
+
+			if (method["get-config"].paths)
+			for (var p in method["get-config"].paths)
+			{
+				var path = method["get-config"].paths[p]
+
+				var rs = path.method('')
+				if (typeof rs === "string")
+					return res(netconf.rpc_error(rs, "operation-failed"))
+
+				Object.assign(data[module], rs)
+			}
+		}
 
 		return res({'data' : data})
 	})
@@ -182,14 +242,14 @@ rpc_methods["edit-config"] = function(oin, res)
 			return res(netconf.rpc_error("rcp method '" + c + "' not found ", "operation-not-supported"))
 		}
 
-		for (var p in paths)
+		for (var p in method.paths)
 		{
-			var path = paths[p]
+			var path = method.paths[p]
 
-			var res = json_path.eval(configs[c], path.path)
-			if (res.length && path.method)
+			var method_call = json_path.eval(configs[c], path.path)
+			if (method_call.length && path.method)
 			{
-				var rc = path.method(res)
+				var rc = path.method(method_call)
 				if (rc && rc.code)
 					return res(netconf.rpc_error(rc.msg, "operation-failed"))
 			}
