@@ -28,7 +28,7 @@ var server = netconf_server.create(function(error, rpc_methods)
 		response('<data>'+
 			'<system-state xmlns="urn:ietf:params:xml:ns:yang:ietf-system">'+
 				'<firmware-job xmlns="urn:opencpe:firmware-mgmt">'+
-					'<firmware-job xmlns="urn:opencpe:firmware-mgmt">'+
+					'<firmware-job>'+
 						'<job-id>1</job-id>'+
 						'<install-target>firmware</install-target>'+
 						'<status>planned</status>'+
