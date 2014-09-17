@@ -20,6 +20,7 @@ tests or tell us about the features that you would like to have tested.
     sudo ln -sf /usr/bin/nodejs /usr/bin/node
     
     # Arch Linux
+    sudo pacman -S python2
     export PYTHON=python2
     
 #### Installation
