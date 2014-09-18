@@ -234,6 +234,8 @@ var server = function(options, callback)
 								{
 									var file = files[f]
 
+									// TODO: delete cache when needed
+									delete require.cache[__dirname + "/methods/" + file]
 									var methods = require(config.server_methods_dir + file)
 									for (var method in methods)
 									{
