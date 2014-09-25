@@ -21,6 +21,7 @@ test-all: \
 	test-opencpe
 
 test-generic:
+	node generic_hello.js
 	node generic_rpc_get.js
 
 test-syslog:
