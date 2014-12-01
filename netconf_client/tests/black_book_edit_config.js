@@ -31,6 +31,10 @@ var client = netconf_client.create(function(error)
 						"<name>Jennifer</name>" +
 						"<phone>09176547</phone>" +
 					 "</person>" +
+					 "<person>" +
+						"<name>Scarlet</name>" +
+						"<phone>0912346456</phone>" +
+					 "</person>" +
 				"</black-book>" +
 			"</config>" +
 		"</edit-config>"
