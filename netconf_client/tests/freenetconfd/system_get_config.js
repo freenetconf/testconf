@@ -13,7 +13,9 @@
  * along with testconf. If not, see <http://www.gnu.org/licenses/>.
  */
 
-var netconf_client = require('../netconf_client')
+var netconf_client = require('../../netconf_client')
+
+var xml='<get-config><filter><system xmlns="urn:ietf:params:xml:ns:yang:ietf-system"/></filter></get-config>'
 
 var client = netconf_client.create(function(error)
 {
@@ -23,24 +25,13 @@ var client = netconf_client.create(function(error)
 		process.exit(1)
 	}
 
-	var xml = "<edit-config xmlns:nc='urn:ietf:params:xml:ns:netconf:base:1.0'>" +
-			"<target><running/></target>"+
-			"<config>" +
-				"<system xmlns='urn:ietf:params:xml:ns:yang:ietf-system'>" +
-				  "<dns-resolver>" +
-					 "<search xmlns:nc='urn:ietf:params:xml:ns:netconf:base:1.0' " +
-									   "nc:operation='delete'>localhost1</search>" +
-					 "<search>changed1</search>" +
-					 "<search>changed2</search>" +
-				  "</dns-resolver>" +
-				"</system>" +
-			"</config>" +
-		"</edit-config>"
-
 	client.send(xml, function(error, reply)
 	{
 		if (error)
-			return console.error("error:" + error)
+		{
+			console.error(error)
+			process.exit(1)
+		}
 
 		client.send_close(function(error, reply)
 		{
@@ -53,16 +44,19 @@ var client = netconf_client.create(function(error)
 			{
 				process.exit(0)
 			}
+
 		})
 	})
 })
 
-client.on('rpc-reply', function(error)
+client.on('rpc-reply', function(reply)
 {
 })
 
 client.on('error', function(error)
 {
+	console.error(error)
+	process.exit(1)
 })
 
 client.on('end', function(error)

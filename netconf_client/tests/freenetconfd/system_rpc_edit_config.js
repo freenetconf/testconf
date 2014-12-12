@@ -13,7 +13,7 @@
  * along with testconf. If not, see <http://www.gnu.org/licenses/>.
  */
 
-var netconf_client = require('../netconf_client')
+var netconf_client = require('../../netconf_client')
 
 var client = netconf_client.create(function(error)
 {
@@ -24,18 +24,12 @@ var client = netconf_client.create(function(error)
 	}
 
 	var xml = "<edit-config xmlns:nc='urn:ietf:params:xml:ns:netconf:base:1.0'>" +
-			"<target><running/></target>"+
+			"<target><running/></target>" +
 			"<config>" +
 				"<system xmlns='urn:ietf:params:xml:ns:yang:ietf-system'>" +
-				  "<ntp>" +
-					 "<server>" +
-						"<name>server1</name>" +
-						"<udp>" +
-						   "<address>localhost1</address>" +
-						   "<port>1338</port>" +
-						"</udp>" +
-					 "</server>" +
-				  "</ntp>" +
+				"<ntp>" +
+					"<enabled>true</enabled>" +
+			    "</ntp>" +
 				"</system>" +
 			"</config>" +
 		"</edit-config>"
@@ -43,7 +37,10 @@ var client = netconf_client.create(function(error)
 	client.send(xml, function(error, reply)
 	{
 		if (error)
-			return console.error("error:" + error)
+		{
+			console.error(error)
+			process.exit(1)
+		}
 
 		client.send_close(function(error, reply)
 		{
@@ -60,7 +57,7 @@ var client = netconf_client.create(function(error)
 	})
 })
 
-client.on('rpc-reply', function(error)
+client.on('rpc-reply', function(reply)
 {
 })
 
