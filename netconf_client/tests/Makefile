@@ -30,3 +30,26 @@ test-syslog:
 
 test-opencpe:
 	node opencpe_firmware_download.js
+
+test-freenetconfd-plugins-example: \
+	test-freenetconfd-plugins-example-black_book \
+	test-freenetconfd-plugins-example-house_lockdown \
+	test-freenetconfd-plugins-example-sandwich \
+	test-freenetconfd-plugins-example-shopping_list
+
+test-freenetconfd-plugins-example-black_book:
+	node freenetconfd-plugins/examples/black_book_edit_config_delete.js
+	node freenetconfd-plugins/examples/black_book_edit_config.js
+	node freenetconfd-plugins/examples/black_book_get.js
+
+test-freenetconfd-plugins-example-house_lockdown:
+	node freenetconfd-plugins/examples/house_lockdown_rpc.js
+
+test-freenetconfd-plugins-example-sandwich:
+	node freenetconfd-plugins/examples/sandwich_edit_config_delete.js
+	node freenetconfd-plugins/examples/sandwich_edit_config.js
+	node freenetconfd-plugins/examples/sandwich_get.js
+
+test-freenetconfd-plugins-example-shopping_list:
+	node freenetconfd-plugins/examples/shopping_list_edit_config.js
+	node freenetconfd-plugins/examples/shopping_list_get.js
