@@ -15,7 +15,7 @@
 
 var netconf_client = require('../netconf_client')
 
-var xml='<get><filter><sandwich xmlns="xml:ns:yang:sandwich"/></filter>'+
+var xml='<get><filter><sandwich xmlns="urn:ietf:params:xml:ns:yang:sandwich"/></filter>'+
 		 '</get>'
 
 var client = netconf_client.create(function(error)

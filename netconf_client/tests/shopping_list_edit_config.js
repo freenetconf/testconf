@@ -26,7 +26,7 @@ var client = netconf_client.create(function(error)
 	var xml = "<edit-config xmlns:nc='urn:ietf:params:xml:ns:netconf:base:1.0'>" +
 			"<target><running/></target>"+
 			"<config>" +
-				"<shopping-list xmlns='xml:ns:yang:shopping-list'>" +
+				"<shopping-list xmlns='urn:ietf:params:xml:ns:yang:shopping-list'>" +
 					 "<item xmlns:nc='urn:ietf:params:xml:ns:netconf:base:1.0' " +
 									   "nc:operation='delete'>yogurt</item>" +
 					 "<item xmlns:nc='urn:ietf:params:xml:ns:netconf:base:1.0' " +

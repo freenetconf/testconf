@@ -26,7 +26,7 @@ var client = netconf_client.create(function(error)
 	var xml = "<edit-config xmlns:nc='urn:ietf:params:xml:ns:netconf:base:1.0'>" +
 			"<target><running/></target>"+
 			"<config>" +
-				"<sandwich xmlns='xml:ns:yang:sandwich'>" +
+				"<sandwich xmlns='urn:ietf:params:xml:ns:yang:sandwich'>" +
 				  "<name>Improved</name>" +
 				  "<meat>kulen</meat>" +
 				  "<cheese>skripavac</cheese>" +

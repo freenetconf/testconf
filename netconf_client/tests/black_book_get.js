@@ -15,7 +15,7 @@
 
 var netconf_client = require('../netconf_client')
 
-var xml='<get><filter><black-book xmlns="xml:ns:yang:black-book"/></filter>'+
+var xml='<get><filter><black-book xmlns="urn:ietf:params:xml:ns:yang:black-book"/></filter>'+
 		 '</get>'
 
 var client = netconf_client.create(function(error)

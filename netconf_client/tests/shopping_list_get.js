@@ -15,7 +15,7 @@
 
 var netconf_client = require('../netconf_client')
 
-var xml='<get><filter><shopping-list xmlns="xml:ns:yang:shopping-list"><item/></shopping-list></filter>'+
+var xml='<get><filter><shopping-list xmlns="urn:ietf:params:xml:ns:yang:shopping-list"><item/></shopping-list></filter>'+
 		 '</get>'
 
 var client = netconf_client.create(function(error)
