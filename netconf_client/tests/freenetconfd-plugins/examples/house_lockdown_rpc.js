@@ -13,10 +13,9 @@
  * along with testconf. If not, see <http://www.gnu.org/licenses/>.
  */
 
-var netconf_client = require('../netconf_client')
+var netconf_client = require('../../../netconf_client')
 
-var xml='<get><filter><black-book xmlns="urn:ietf:params:xml:ns:yang:black-book"/></filter>'+
-		 '</get>'
+var xml = '<house-lockdown xmlns="urn:ietf:params:xml:ns:yang:house-lockdown"/>'
 
 var client = netconf_client.create(function(error)
 {
@@ -50,7 +49,7 @@ var client = netconf_client.create(function(error)
 	})
 })
 
-client.on('rpc-reply', function(error)
+client.on('rpc-reply', function(reply)
 {
 })
 

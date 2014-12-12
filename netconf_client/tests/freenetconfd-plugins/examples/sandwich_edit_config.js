@@ -13,7 +13,7 @@
  * along with testconf. If not, see <http://www.gnu.org/licenses/>.
  */
 
-var netconf_client = require('../netconf_client')
+var netconf_client = require('../../../netconf_client')
 
 var client = netconf_client.create(function(error)
 {
@@ -24,25 +24,24 @@ var client = netconf_client.create(function(error)
 	}
 
 	var xml = "<edit-config xmlns:nc='urn:ietf:params:xml:ns:netconf:base:1.0'>" +
-			"<target><running/></target>"+
+			"<target><running/></target>" +
 			"<config>" +
-				"<black-book xmlns='urn:ietf:params:xml:ns:yang:black-book'>" +
-					 "<person xmlns:nc='urn:ietf:params:xml:ns:netconf:base:1.0' " +
-														  "nc:operation='delete'>" +
-						"<name>Jennifer</name>" +
-					 "</person>" +
-					 "<person>" +
-						"<name>Scarlet</name>" +
-						"<phone>0912346456</phone>" +
-					 "</person>" +
-				"</black-book>" +
+				"<sandwich xmlns='urn:ietf:params:xml:ns:yang:sandwich'>" +
+				  "<name>Improved</name>" +
+				  "<meat>kulen</meat>" +
+				  "<cheese>skripavac</cheese>" +
+				  "<salad>tomato</salad>" +
+				"</sandwich>" +
 			"</config>" +
 		"</edit-config>"
 
 	client.send(xml, function(error, reply)
 	{
 		if (error)
-			return console.error("error:" + error)
+		{
+			console.error(error)
+			process.exit(1)
+		}
 
 		client.send_close(function(error, reply)
 		{
@@ -59,7 +58,7 @@ var client = netconf_client.create(function(error)
 	})
 })
 
-client.on('rpc-reply', function(error)
+client.on('rpc-reply', function(reply)
 {
 })
 
