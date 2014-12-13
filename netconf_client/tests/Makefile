@@ -56,6 +56,7 @@ test-freenetconfd:
 
 test-freenetconfd-plugins-example: \
 	test-freenetconfd-plugins-example-black_book \
+	test-freenetconfd-plugins-example-filer \
 	test-freenetconfd-plugins-example-house_lockdown \
 	test-freenetconfd-plugins-example-sandwich \
 	test-freenetconfd-plugins-example-shopping_list
@@ -64,6 +65,10 @@ test-freenetconfd-plugins-example-black_book:
 	node freenetconfd-plugins/examples/black_book_edit_config_delete.js
 	node freenetconfd-plugins/examples/black_book_edit_config.js
 	node freenetconfd-plugins/examples/black_book_get.js
+
+test-freenetconfd-plugins-example-black_book:
+	node freenetconfd-plugins/examples/filer_edit_config.js
+	node freenetconfd-plugins/examples/filer_get.js
 
 test-freenetconfd-plugins-example-house_lockdown:
 	node freenetconfd-plugins/examples/house_lockdown_rpc.js
