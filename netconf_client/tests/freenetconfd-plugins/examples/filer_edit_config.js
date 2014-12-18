@@ -27,7 +27,7 @@ var client = netconf_client.create(function(error)
 			"<target><running/></target>"+
 			"<config>" +
 				"<filer xmlns='urn:ietf:params:xml:ns:yang:filer'>" +
-					"<data>Here comes your new data!</data>"
+					"<data>Here comes your new data!</data>" +
 				"</filer>" +
 			"</config>" +
 		"</edit-config>"
