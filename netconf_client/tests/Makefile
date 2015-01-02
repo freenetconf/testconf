@@ -59,7 +59,8 @@ test-freenetconfd-plugins-example: \
 	test-freenetconfd-plugins-example-filer \
 	test-freenetconfd-plugins-example-house_lockdown \
 	test-freenetconfd-plugins-example-sandwich \
-	test-freenetconfd-plugins-example-shopping_list
+	test-freenetconfd-plugins-example-shopping_list \
+	test-freenetconfd-plugins-example-vehicle
 
 test-freenetconfd-plugins-example-black_book:
 	node freenetconfd-plugins/examples/black_book_edit_config_delete.js
@@ -81,3 +82,8 @@ test-freenetconfd-plugins-example-sandwich:
 test-freenetconfd-plugins-example-shopping_list:
 	node freenetconfd-plugins/examples/shopping_list_edit_config.js
 	node freenetconfd-plugins/examples/shopping_list_get.js
+
+test-freenetconfd-plugins-example-vehicle:
+	node freenetconfd-plugins/examples/vehicle_edit_config_delete.js
+	node freenetconfd-plugins/examples/vehicle_edit_config.js
+	node freenetconfd-plugins/examples/vehicle_get.js
