@@ -15,7 +15,7 @@
 
 var netconf_client = require('../../netconf_client')
 
-var xml='<get><filter><system xmlns="urn:ietf:params:xml:ns:yang:ietf-system"/></filter></get>'
+var xml='<get><filter><system xmlns="urn:ietf:params:xml:ns:yang:ietf-system"><timezone-location/></system></filter></get>'
 
 var client = netconf_client.create(function(error)
 {
@@ -32,9 +32,7 @@ var client = netconf_client.create(function(error)
 			console.error(error)
 			process.exit(1)
 		}
-
-		console.log(reply)
-
+		console.log(reply);
 		client.send_close(function(error, reply)
 		{
 			if (error)
