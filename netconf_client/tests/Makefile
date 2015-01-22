@@ -56,6 +56,7 @@ test-freenetconfd:
 	node freenetconfd/system_get_ntp.js
 	node freenetconfd/system_get_timezone_location.js
 	node freenetconfd/system_set_timezone_location.js
+	node freenetconfd/system_set_location.js
 
 test-freenetconfd-plugins-example: \
 	test-freenetconfd-plugins-example-black_book \
