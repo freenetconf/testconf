@@ -33,6 +33,8 @@ var client = netconf_client.create(function(error)
 			process.exit(1)
 		}
 
+		console.log(reply)
+
 		client.send_close(function(error, reply)
 		{
 			if (error)
