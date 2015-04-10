@@ -15,7 +15,7 @@
 
 var netconf_client = require('../../../netconf_client')
 
-var xml='<get><filter><dummy xmlns="urn:ietf:params:xml:ns:yang:dummy"/></filter></get>'
+var xml='<get><filter><interfaces-state xmlns="urn:ietf:params:xml:ns:yang:ifstat" /></filter></get>'
 
 var client = netconf_client.create(function(error)
 {
@@ -33,6 +33,7 @@ var client = netconf_client.create(function(error)
 			process.exit(1)
 		}
 
+		console.log(reply)
 		client.send_close(function(error, reply)
 		{
 			if (error)
@@ -44,7 +45,6 @@ var client = netconf_client.create(function(error)
 			{
 				process.exit(0)
 			}
-
 		})
 	})
 })
