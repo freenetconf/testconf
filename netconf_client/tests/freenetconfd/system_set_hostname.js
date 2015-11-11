@@ -56,6 +56,9 @@ var client = netconf_client.create(function(error)
 
 client.on('rpc-reply', function(reply)
 {
+	var util = require('util');
+	console.log(reply.data)
+	console.log(util.inspect(reply.data, {showHidden: false, depth: null}));
 })
 
 client.on('error', function(error)

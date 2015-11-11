@@ -1,8 +1,7 @@
 /*
- * Copyright (C) 2014 Cisco Systems, Inc.
+ * Copyright (C) 2015 Deutsche Telekom AG.
  *
- * Author: Petar Koretic <petar.koretic@sartura.hr>
- * Author: Luka Perkov <luka.perkov@sartura.hr>
+ * Author: Mislav Novakovic <mislav.novakovic@sartura.hr>
  *
  * testconf is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,16 +22,7 @@ var client = netconf_client.create(function(error)
 		process.exit(1)
 	}
 
-	var xml = "<edit-config xmlns:nc='urn:ietf:params:xml:ns:netconf:base:1.0'>" +
-			"<target><running/></target>"+
-			"<config>" +
-				"<system xmlns='urn:ietf:params:xml:ns:yang:ietf-system'>" +
-				  "<dns-resolver>" +
-					"<server nc:operation='delete'><name>192.168.1.2</name></server>" +
-				  "</dns-resolver>" +
-				"</system>" +
-			"</config>" +
-		"</edit-config>"
+	var xml = '<system-shutdown xmlns="urn:ietf:params:xml:ns:yang:ietf-system-openwrt"></system-shutdown>'
 
 	client.send(xml, function(error, reply)
 	{
@@ -53,6 +43,7 @@ var client = netconf_client.create(function(error)
 			{
 				process.exit(0)
 			}
+
 		})
 	})
 })
@@ -73,3 +64,5 @@ client.on('error', function(error)
 client.on('end', function(error)
 {
 })
+
+

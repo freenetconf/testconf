@@ -15,7 +15,7 @@
 
 var netconf_client = require('../../netconf_client')
 
-var xml = '<set-current-datetime xmlns="urn:ietf:params:xml:ns:yang:ietf-system"><current-datetime>2012-12-12T12:12:12-00:00</current-datetime></set-current-datetime>'
+var xml = '<set-current-datetime xmlns="urn:ietf:params:xml:ns:yang:ietf-system"><current-datetime>2012-12-12 12:12:12-00:00</current-datetime></set-current-datetime>'
 
 var client = netconf_client.create(function(error)
 {
@@ -51,6 +51,9 @@ var client = netconf_client.create(function(error)
 
 client.on('rpc-reply', function(reply)
 {
+	var util = require('util');
+	console.log(reply.data)
+	console.log(util.inspect(reply.data, {showHidden: false, depth: null}));
 })
 
 client.on('error', function(error)
@@ -62,4 +65,3 @@ client.on('error', function(error)
 client.on('end', function(error)
 {
 })
-
