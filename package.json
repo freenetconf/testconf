@@ -21,7 +21,7 @@
 		"JSONPath": "0.11.2",
 		"ssh2": "0.4.13",
 		"ssh": "1.8.0",
-		"es6-shim": "0.17.0"
+		"es6-shim": "0.35.0"
 	},
 	"engine": "node >= 0.10.31",
 	"contributors": [
