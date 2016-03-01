@@ -64,7 +64,7 @@ netconf.add_method(methods["get"], "$..syslog[*]..console-logging[*]", function(
 
 netconf.add_method(methods["get"], "$..syslog[*]..file-logging[*]", function(filter)
 {
-	console.log(input['file-name'][0]) //string
+	//console.log(input['file-name'][0]) //string
 	//input['file-size'][0] //uint32
 	//input['logging-severity'][0] //syslogtypes:Severity
 	//input['facility'][0] //identityref
@@ -129,7 +129,7 @@ netconf.add_method(methods["get-config"], "$..syslog[*]..console-logging[*]", fu
 })
 netconf.add_method(methods["get-config"], "$..syslog[*]..file-logging[*]", function(filter)
 {
-	console.log(input['file-name'][0]) //string
+	//console.log(input['file-name'][0]) //string
 	//input['file-size'][0] //uint32
 	//input['logging-severity'][0] //syslogtypes:Severity
 	//input['facility'][0] //identityref
@@ -195,7 +195,7 @@ netconf.add_method(methods["edit-config"], "$..syslog[*]..console-logging[*]", f
 
 netconf.add_method(methods["edit-config"], "$..syslog[*]..file-logging[*]", function(input)
 {
-	console.log(input['file-name'][0]) //string
+	//console.log(input['file-name'][0]) //string
 	//input['file-size'][0] //uint32
 	//input['logging-severity'][0] //syslogtypes:Severity
 	//input['facility'][0] //identityref

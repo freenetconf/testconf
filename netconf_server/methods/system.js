@@ -89,7 +89,7 @@ netconf.add_method(methods["get"], "$..system[*]..authentication[*]", function(f
 
 netconf.add_method(methods["get"], "$..system[*]..ntp[*]..udp[*]", function(filter)
 {
-	console.log(input['address'][0]) //inet:host
+	//console.log(input['address'][0]) //inet:host
 	//input['port'][0] //inet:port-number
 
 	return { }
@@ -105,7 +105,7 @@ netconf.add_method(methods["get"], "$..system[*]..dns-resolver[*]..options[*]", 
 
 netconf.add_method(methods["get"], "$..system[*]..dns-resolver[*]..udp-and-tcp[*]", function(filter)
 {
-	console.log(input['address'][0]) //inet:ip-address
+	//console.log(input['address'][0]) //inet:ip-address
 	//input['port'][0] //inet:port-number
 
 	return { }
@@ -121,9 +121,9 @@ netconf.add_method(methods["get"], "$..system[*]..radius[*]..options[*]", functi
 
 netconf.add_method(methods["get"], "$..system[*]..radius[*]..udp[*]", function(filter)
 {
-	console.log(input['address'][0]) //inet:host
+	//console.log(input['address'][0]) //inet:host
 	//input['authentication-port'][0] //inet:port-number
-	console.log(input['shared-secret'][0]) //string
+	//console.log(input['shared-secret'][0]) //string
 
 	return { }
 })
@@ -195,7 +195,7 @@ netconf.add_method(methods["get-config"], "$..system[*]..authentication[*]", fun
 })
 netconf.add_method(methods["get-config"], "$..system[*]..ntp[*]..udp[*]", function(filter)
 {
-	console.log(input['address'][0]) //inet:host
+	//console.log(input['address'][0]) //inet:host
 	//input['port'][0] //inet:port-number
 
 	return { }
@@ -209,7 +209,7 @@ netconf.add_method(methods["get-config"], "$..system[*]..dns-resolver[*]..option
 })
 netconf.add_method(methods["get-config"], "$..system[*]..dns-resolver[*]..udp-and-tcp[*]", function(filter)
 {
-	console.log(input['address'][0]) //inet:ip-address
+	//console.log(input['address'][0]) //inet:ip-address
 	//input['port'][0] //inet:port-number
 
 	return { }
@@ -223,9 +223,9 @@ netconf.add_method(methods["get-config"], "$..system[*]..radius[*]..options[*]",
 })
 netconf.add_method(methods["get-config"], "$..system[*]..radius[*]..udp[*]", function(filter)
 {
-	console.log(input['address'][0]) //inet:host
+	//console.log(input['address'][0]) //inet:host
 	//input['authentication-port'][0] //inet:port-number
-	console.log(input['shared-secret'][0]) //string
+	//console.log(input['shared-secret'][0]) //string
 
 	return { }
 })
@@ -297,7 +297,7 @@ netconf.add_method(methods["edit-config"], "$..system[*]..authentication[*]", fu
 
 netconf.add_method(methods["edit-config"], "$..system[*]..ntp[*]..udp[*]", function(input)
 {
-	console.log(input['address'][0]) //inet:host
+	//console.log(input['address'][0]) //inet:host
 	//input['port'][0] //inet:port-number
 
 })
@@ -313,7 +313,7 @@ netconf.add_method(methods["edit-config"], "$..system[*]..dns-resolver[*]..optio
 
 netconf.add_method(methods["edit-config"], "$..system[*]..dns-resolver[*]..udp-and-tcp[*]", function(input)
 {
-	console.log(input['address'][0]) //inet:ip-address
+	//console.log(input['address'][0]) //inet:ip-address
 	//input['port'][0] //inet:port-number
 
 })
@@ -329,9 +329,9 @@ netconf.add_method(methods["edit-config"], "$..system[*]..radius[*]..options[*]"
 
 netconf.add_method(methods["edit-config"], "$..system[*]..radius[*]..udp[*]", function(input)
 {
-	console.log(input['address'][0]) //inet:host
+	//console.log(input['address'][0]) //inet:host
 	//input['authentication-port'][0] //inet:port-number
-	console.log(input['shared-secret'][0]) //string
+	//console.log(input['shared-secret'][0]) //string
 
 })
 
@@ -354,7 +354,7 @@ netconf.add_method(methods["edit-config"], "$..system-state[*]..clock[*]", funct
 */
 methods["set-current-datetime"] = function(input, response)
 {
-	console.log(input['current-datetime'][0]) //yang:date-and-time
+	//console.log(input['current-datetime'][0]) //yang:date-and-time
 
 	response({'data' : ''})
 }
