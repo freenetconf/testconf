@@ -20,8 +20,8 @@
 		"xml2js": "0.4.16",
 		"JSONPath": "0.11.2",
 		"ssh2": "0.4.13",
-		"ssh": "1.8.0",
-		"es6-shim": "0.35.0"
+		"es6-shim": "0.35.0",
+		"buffer-equal-constant-time": "1.0.1"
 	},
 	"engine": "node >= 0.10.31",
 	"contributors": [

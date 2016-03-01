@@ -19,7 +19,11 @@ var util = require('util')
 var events = require("events")
 var path = require('path')
 
-var libssh = require('ssh')
+var ssh2 = require('ssh2')
+var utils = ssh2.utils
+var crypto = require('crypto')
+var inspect = util.inspect
+var buffersEqual = require('buffer-equal-constant-time')
 var netconf = require('../core/netconf')
 var debug = require('../core/debug')
 var config = require('../core/config')
@@ -74,244 +78,266 @@ var server = function(options, callback)
 
 	var capabilities = netconf.capabilities_from_yang(config.yang_dir, self.log_file)
 
-	var ssh = libssh.createServer
+	console.log('.. starting ssh server')
+	var pubKey = utils.genPublicKey(utils.parseKey(fs.readFileSync(config.keys_dir + 'ssh_host_rsa_key.pub')))
+	var ssh = new ssh2.Server
 	({
-		hostRsaKeyFile : config.keys_dir + 'ssh_host_rsa_key',
-		hostDsaKeyFile : config.keys_dir + 'ssh_host_dsa_key'
-	})
-
-	ssh.listen(self.port)
-
-	ssh.on('ready', function()
+		privateKey : fs.readFileSync(config.keys_dir + 'ssh_host_rsa_key'),
+	}, function(client)
 	{
-		debug.write('.. listening on ' + self.host + ":" + self.port, true, self.log_file)
+		var auth_retries = 0
 
-		ssh.on('connection', function(session)
-		{
-			var auth_retries = 0
-
-			debug.write('.. received connection', true, self.log_file)
-
-			session.on('auth', function(message)
+		client.on('authentication', function(ctx) {
+			var reject = function ()
 			{
-
-				debug.write('... authentication type: ' + message.subtype, true, self.log_file)
-				if (message.subtype == 'publickey' &&
-					message.authUser == self.user &&
-					message.comparePublicKey(fs.readFileSync(config.keys_dir + 'admin_rsa.pub')))
-				{
-					debug.write('... authenticated "' + self.user + '" using public key', true, self.log_file)
-					return message.replyAuthSuccess()
-				}
-
-				if (message.subtype == 'password' &&
-					message.authUser == self.user &&
-					message.authPassword == self.pass)
-				{
-					debug.write('... authenticated "' + self.user + '" using password', true, self.log_file)
-					return message.replyAuthSuccess()
-				}
-
-				message.replyDefault()
-
+				console.log('rejecting')
 				if (auth_retries++ > config.server.auth_retries)
 				{
 					debug.write('... authentication failed', true, self.log_file)
+					ctx.reject()
 					return callback('error', 'authentication failed')
 				}
-			})
+				else
+				{
+					ctx.reject()
+					return callback('error', 'authentication failed')
+				}
+			}
 
-			session.on('channel', function(channel)
+			if (ctx.method === 'password')
 			{
+				if (ctx.username === self.user
+						&& ctx.password === self.pass)
+				{
+					debug.write('... authenticated "' + self.user + '" using password', true, self.log_file)
+					ctx.accept()
+				}
+				else
+				{
+					reject()
+					return callback('error', 'authentication failed')
+				}
+			}
+			else if (ctx.method === 'publickey'
+					&& ctx.key.algo === pubKey.fulltype
+					&& buffersEqual(ctx.key.data, pubKey.public))
+			{
+				if (ctx.signature)
+				{
+					var verifier = crypto.createVerify(ctx.sigAlgo)
+					verifier.update(ctx.blob)
+					if (verifier.verify(pubKey.publicOrig, ctx.signature))
+					{
+						debug.write('... authenticated "' + self.user + '" using public key', true, self.log_file)
+						ctx.accept()
+					}
+					else
+					{
+						reject()
+						return callback('error', 'authentication failed')
+					}
+				}
+				else
+				{
+					debug.write('... authenticated "' + self.user + '" using public key', true, self.log_file)
+					ctx.accept()
+				}
+			}
+			else
+			{
+				reject()
+				return callback('error', 'authentication failed')
+			}
+		}).on('ready', function()
+		{
+			debug.write('.. received connection', true, self.log_file)
+
+			client.on('session', function(accept, reject)
+			{
+				var session = accept()
+
 				var connection = {}
 				connection.buffer = ''
 				connection.netconf_base = 0
 				connection.netconf_ready = 0
 				connection.session_id = ++session_id_counter
 
-				ssh_channel = channel
-
-
-				channel.on('subsystem', function(message)
+				session.once('subsystem', function(accept, reject, info)
 				{
-					if (message.subsystem != 'netconf')
+					if (info.name != 'netconf')
 					{
 						message.replyDefault()
-						debug.write('... tried to request non-netconf subsytem: "' + message.subsystem + '"', true, self.log_file)
-						return callback('error', 'tried to request non-netconf subsytem: "' + message.subsystem + '"')
+						debug.write('... tried to request non-netconf subsytem: "' + info.name + '"', true, self.log_file)
+						reject()
+						return callback('error', 'tried to request non-netconf subsytem: "' + info.name + '"')
 					}
 
 					debug.write('... acquired netconf subsytem', true, self.log_file)
 
-					message.replySuccess()
+					var stream = accept()
 
 					if (self.send_hello_message)
 					{
 						var h = netconf.hello(capabilities, connection.session_id)
 						debug.write('.... sending hello message', true, self.log_file)
 
-						channel.write(h)
+						stream.write(h)
 
 						debug.write('<<<< msg netconf (hello) <<<<', false, self.log_file)
 						debug.write(h, false, self.log_file)
 						debug.write('---- msg netconf (hello) ----', false, self.log_file)
 					}
-				})
 
-				channel.on('data', function(data)
-				{
-					debug.write('.... received (partial) msg, len: ' + data.toString().length, false, self.log_file)
-					debug.write('<<<< partial msg <<<<', false, self.log_file)
-					debug.write(data.toString(), false, self.log_file)
-					debug.write('---- partial msg ----', false, self.log_file)
-
-					connection.buffer += data;
-
-					debug.write('.... processing incoming request', true, self.log_file)
-					netconf.process_message(connection, process_request)
-
-					function process_request(request)
+					stream.on('data', function(data)
 					{
-						debug.write('<<<< msg netconf <<<<', false, self.log_file)
-						debug.write(request, false, self.log_file)
-						debug.write('---- msg netconf ----', false, self.log_file)
+						debug.write('.... received (partial) msg, len: ' + data.toString().length, false, self.log_file)
+						debug.write('<<<< partial msg <<<<', false, self.log_file)
+						debug.write(data.toString(), false, self.log_file)
+						debug.write('---- partial msg ----', false, self.log_file)
 
-						xml2js.parseString(request, function(error, data)
+						connection.buffer += data;
+
+						debug.write('.... processing incoming request', true, self.log_file)
+						netconf.process_message(connection, process_request)
+
+						function process_request(request)
 						{
-							if (error)
-							{
-								debug.write('.... xml parsing failed', true, self.log_file)
-								debug.write(error, false, self.log_file)
+							debug.write('<<<< msg netconf <<<<', false, self.log_file)
+							debug.write(request, false, self.log_file)
+							debug.write('---- msg netconf ----', false, self.log_file)
 
-								return self.emit('error', error)
-							}
-
-							if (data["hello"])
+							xml2js.parseString(request, function(error, data)
 							{
-								if (connection.netconf_ready)
+								if (error)
 								{
-									debug.write('..... hello received at the wrong stage', true, self.log_file)
-									return self.emit('error', 'hello received at the wrong stage')
+									debug.write('.... xml parsing failed', true, self.log_file)
+									debug.write(error, false, self.log_file)
+
+									return self.emit('error', error)
 								}
 
-								debug.write('..... hello', true, self.log_file)
-								connection.netconf_ready = 1
-
-								var capabilities = data["hello"]["capabilities"][0].capability;
-
-								for (var i in capabilities)
+								if (data["hello"])
 								{
-									debug.write('...... capability - ' + capabilities[i], true, self.log_file)
-
-									if (capabilities[i] == 'urn:ietf:params:netconf:base:1.1')
+									if (connection.netconf_ready)
 									{
-										connection.netconf_base = 1
+										debug.write('..... hello received at the wrong stage', true, self.log_file)
+										return self.emit('error', 'hello received at the wrong stage')
 									}
-								}
 
-								return callback(null, self.rpc_methods)
-							}
+									debug.write('..... hello', true, self.log_file)
+									connection.netconf_ready = 1
 
-							if (data["rpc"])
-							{
+									var capabilities = data["hello"]["capabilities"][0].capability;
 
-								var rpc_reply = {}
-								var xml_message = ''
-
-								// handle core modules
-								for (var method in self.rpc_methods)
-								{
-									if (method in data["rpc"])
+									for (var i in capabilities)
 									{
-										self.rpc_methods[method](data["rpc"][method][0], rpc_method_call)
-										return
+										debug.write('...... capability - ' + capabilities[i], true, self.log_file)
+
+										if (capabilities[i] == 'urn:ietf:params:netconf:base:1.1')
+										{
+											connection.netconf_base = 1
+										}
 									}
+
+									return callback(null, self.rpc_methods)
 								}
 
-								// handle generated modules
-								var files = fs.readdirSync(config.server_methods_dir)
-								for (var f in files)
+								if (data["rpc"])
 								{
-									var file = files[f]
 
-									// TODO: delete cache when needed
-									delete require.cache[__dirname + "/methods/" + file]
-									var methods = require(config.server_methods_dir + file)
-									for (var method in methods)
+									var rpc_reply = {}
+									var xml_message = ''
+
+									// handle core modules
+									for (var method in self.rpc_methods)
 									{
 										if (method in data["rpc"])
 										{
-											methods[method](data["rpc"][method][0], rpc_method_call)
+											self.rpc_methods[method](data["rpc"][method][0], rpc_method_call)
 											return
 										}
 									}
-								}
 
-								function rpc_method_call(resp)
-								{
-
-									if (!resp)
+									// handle generated modules
+									var files = fs.readdirSync(config.server_methods_dir)
+									for (var f in files)
 									{
-										resp = netconf.rpc_error("method failed", "operation-not-supported")
-									}
+										var file = files[f]
 
-									// raw xml message
-									if (typeof resp === 'string')
-									{
-										xml2js.parseString(resp, function(error, data)
+										// TODO: delete cache when needed
+										delete require.cache[__dirname + "/methods/" + file]
+										var methods = require(config.server_methods_dir + file)
+										for (var method in methods)
 										{
-											rpc_method_send(error ? {"rpc-error" : error} : data)
-										})
+											if (method in data["rpc"])
+											{
+												methods[method](data["rpc"][method][0], rpc_method_call)
+												return
+											}
+										}
 									}
 
-									// javascript object message
-									else
+									function rpc_method_call(resp)
 									{
-										rpc_method_send(resp)
+
+										if (!resp)
+										{
+											resp = netconf.rpc_error("method failed", "operation-not-supported")
+										}
+
+										// raw xml message
+										if (typeof resp === 'string')
+										{
+											xml2js.parseString(resp, function(error, data)
+											{
+												rpc_method_send(error ? {"rpc-error" : error} : data)
+											})
+										}
+
+										// javascript object message
+										else
+										{
+											rpc_method_send(resp)
+										}
+									}
+
+									function rpc_method_send(resp)
+									{
+										rpc_reply = {"rpc-reply": resp}
+										rpc_reply["rpc-reply"].$ = data.rpc.$
+
+										xml_message = builder.buildObject(rpc_reply)
+										if (connection.netconf_base == 1)
+											xml_message = netconf.create_framing_chunk(xml_message.length) + xml_message
+
+										xml_message += netconf.ending[connection.netconf_base]
+
+										self.emit('rpc', data['rpc'])
+
+										debug.write('..... sending rpc', true, self.log_file)
+
+										stream.write(xml_message)
+
+										debug.write('>>>> msg netconf >>>>', false, self.log_file)
+										debug.write(xml_message, false, self.log_file)
+										debug.write('---- msg netconf ----', false, self.log_file)
 									}
 								}
-
-								function rpc_method_send(resp)
-								{
-									rpc_reply = {"rpc-reply": resp}
-									rpc_reply["rpc-reply"].$ = data.rpc.$
-
-									xml_message = builder.buildObject(rpc_reply)
-									if (connection.netconf_base == 1)
-										xml_message = netconf.create_framing_chunk(xml_message.length) + xml_message
-
-									xml_message += netconf.ending[connection.netconf_base]
-
-									self.emit('rpc', data['rpc'])
-
-									debug.write('..... sending rpc', true, self.log_file)
-
-									channel.write(xml_message)
-
-									debug.write('>>>> msg netconf >>>>', false, self.log_file)
-									debug.write(xml_message, false, self.log_file)
-									debug.write('---- msg netconf ----', false, self.log_file)
-								}
-							}
-						})
-					}
-				})
-
-				channel.on('end', function()
-				{
-					debug.write('.. ssh channel closed', true, self.log_file)
-				})
-
-				channel.on('error', function(error)
-				{
-					debug.write('.. ssh channel closed due to error', true, self.log_file)
-					self.emit('error', error)
-					fs.closeSync(self.log_file);
+							})
+						}
+					})
 				})
 			})
+		}).on('end', function()
+		{
+			debug.write('.. ssh channel closed', true, self.log_file)
 		})
 	})
 
+	ssh.listen(self.port, self.host, function()
+	{
+		debug.write('.. listening on ' + self.host + ":" + self.port, true, self.log_file)
+	})
 }
 
 util.inherits(server, events.EventEmitter);
