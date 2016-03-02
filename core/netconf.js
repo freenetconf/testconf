@@ -144,6 +144,7 @@ var create_framing_chunk = exports.create_framing_chunk = function(message_lengt
 
 	return "\n#" + message_length + "\n"
 }
+
 exports.create_rpc_message = function(message, base, message_id)
 {
 	if (!message)
@@ -199,7 +200,6 @@ exports.capabilities_from_yang = function(yang_dir, to_file)
 	return capabilities
 }
 
-
 exports.rpc_error = function(msg, tag, type, severity)
 {
 	var rpc_error = { 'rpc-error' : {}}
@@ -239,4 +239,3 @@ exports.add_method = function(methods, path, method)
 	methods["paths"] = methods["paths"] || []
 	methods["paths"].push({path : path, method : method})
 }
-
