@@ -53,6 +53,12 @@ test-freenetconfd:
 	node freenetconfd/system_set_current_datetime.js
 	node freenetconfd/system_state_get_config.js
 	node freenetconfd/system_state_get.js
+	node freenetconfd/system_get_ntp.js
+	node freenetconfd/system_get_timezone_location.js
+	node freenetconfd/system_set_timezone_location.js
+	node freenetconfd/system_set_location.js
+	node freenetconfd/system_get_contact.js
+	node freenetconfd/system_set_contact.js
 
 test-freenetconfd-plugins-example: \
 	test-freenetconfd-plugins-example-black_book \

@@ -15,7 +15,7 @@
 
 var netconf_client = require('../../netconf_client')
 
-var xml='<get><filter><system xmlns="urn:ietf:params:xml:ns:yang:ietf-system"/></filter></get>'
+var xml='<get><filter><system xmlns="urn:ietf:params:xml:ns:yang:ietf-system"><ntp/></system></filter></get>'
 
 var client = netconf_client.create(function(error)
 {
@@ -33,8 +33,7 @@ var client = netconf_client.create(function(error)
 			process.exit(1)
 		}
 
-		console.log(reply)
-
+		console.log(reply);
 		client.send_close(function(error, reply)
 		{
 			if (error)
@@ -53,9 +52,6 @@ var client = netconf_client.create(function(error)
 
 client.on('rpc-reply', function(reply)
 {
-	var util = require('util');
-	console.log(reply.data)
-	console.log(util.inspect(reply.data, {showHidden: false, depth: null}));
 })
 
 client.on('error', function(error)

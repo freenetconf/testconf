@@ -15,8 +15,6 @@
 
 var netconf_client = require('../../netconf_client')
 
-var xml='<get><filter><system xmlns="urn:ietf:params:xml:ns:yang:ietf-system"/></filter></get>'
-
 var client = netconf_client.create(function(error)
 {
 	if (error)
@@ -25,6 +23,15 @@ var client = netconf_client.create(function(error)
 		process.exit(1)
 	}
 
+	var xml = "<edit-config xmlns:nc='urn:ietf:params:xml:ns:netconf:base:1.0'>" +
+			"<target><running/></target>" +
+			"<config>" +
+				"<system xmlns='urn:ietf:params:xml:ns:yang:ietf-system'>" +
+				  "<location>Hrvatska</location>" +
+				"</system>" +
+			"</config>" +
+		"</edit-config>"
+
 	client.send(xml, function(error, reply)
 	{
 		if (error)
@@ -32,8 +39,6 @@ var client = netconf_client.create(function(error)
 			console.error(error)
 			process.exit(1)
 		}
-
-		console.log(reply)
 
 		client.send_close(function(error, reply)
 		{
@@ -46,22 +51,16 @@ var client = netconf_client.create(function(error)
 			{
 				process.exit(0)
 			}
-
 		})
 	})
 })
 
 client.on('rpc-reply', function(reply)
 {
-	var util = require('util');
-	console.log(reply.data)
-	console.log(util.inspect(reply.data, {showHidden: false, depth: null}));
 })
 
 client.on('error', function(error)
 {
-	console.error(error)
-	process.exit(1)
 })
 
 client.on('end', function(error)
