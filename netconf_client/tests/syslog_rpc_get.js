@@ -14,55 +14,43 @@
  */
 
 var netconf_client = require('../netconf_client')
+	
+var xml = "<get>" +
+		"<filter>" +
+			"<syslog xmlns='urn:ietf:params:xml:ns:yang:ietf-syslog'>" +
+				"<file-logging><file-name/></file-logging>" +
+			"</syslog>" +
+		"</filter>" +
+	"</get>"
 
-var client = netconf_client.create(function(error)
+var client = netconf_client.create().then(function(client)
 {
-	if (error)
+	client.send(xml).then(function(success)
 	{
-		console.error(error)
-		process.exit(1)
-	}
+		console.log(success)
+		process.exit(0)
 
-	var xml = "<get>" +
-			"<filter>" +
-				"<syslog xmlns='urn:ietf:params:xml:ns:yang:ietf-syslog'>" +
-					"<file-logging><file-name/></file-logging>" +
-				"</syslog>" +
-			"</filter>" +
-		"</get>"
-
-	client.send(xml, function(error, reply)
-	{
-		if (error)
+		client.send_close().then(function(success)
 		{
-			console.error(error)
+			console.log(success)
+			process.exit(0)
+		},
+		function(reject)
+		{
+			console.log(reject)
 			process.exit(1)
-		}
-
-
-		client.send_close(function(error, reply)
-		{
-			if (error)
-			{
-				console.error(error)
-				process.exit(1)
-			}
-			else
-			{
-				process.exit(0)
-			}
 		})
+	},
+	function(reject)
+	{
+		console.log(reject)
+		process.exit(1)
 	})
-})
-
-client.on('rpc-reply', function(error)
+},
+function(error)
 {
+	process.exit(1)
 })
-
-client.on('error', function(error)
-{
-})
-
-client.on('end', function(error)
+.finally(function()
 {
 })
