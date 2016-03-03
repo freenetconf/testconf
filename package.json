@@ -21,7 +21,8 @@
 		"JSONPath": "0.11.2",
 		"ssh2": "0.4.13",
 		"es6-shim": "0.35.0",
-		"buffer-equal-constant-time": "1.0.1"
+		"buffer-equal-constant-time": "1.0.1",
+		"promise": "7.1.1"
 	},
 	"engine": "node >= 0.10.31",
 	"contributors": [

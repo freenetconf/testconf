@@ -20,12 +20,13 @@ var builder = new xml2js.Builder();
 var events = require("events")
 var util = require('util')
 var path = require('path')
+var Promise = require('promise')
 
 var netconf = require('../core/netconf')
 var debug = require('../core/debug')
 var config = require('../core/config')
 
-var client = function(options, callback)
+var client = function(options)
 {
 	var opts = options || {}
 	this.name = opts.name || path.basename(module.parent.filename)
@@ -90,243 +91,228 @@ var client = function(options, callback)
 		ssh_opts.password = self.pass
 	}
 
-	ssh.connect(ssh_opts);
 
-	ssh.on('ready', function()
+	var startSshClientSession = function(ssh_opts)
 	{
-		debug.write('.. ssh connection ready', true, self.log_file)
-
-		ssh.subsys('netconf', function(error, stream)
+		return new Promise(function(resolve, reject)
 		{
-			if (error)
+			ssh.connect(ssh_opts);
+
+			ssh.on('ready', function()
 			{
-				ssh.end()
-				callback && callback(error)
+				debug.write('.. ssh connection ready', true, self.log_file)
 
-				return
-			}
-
-			con = stream
-
-			debug.write('... netconf subsystem acquired', true, self.log_file)
-
-			if (self.send_hello_message)
-			{
-				debug.write('.... sending client hello', true, self.log_file)
-				debug.write('>>>> msg netconf hello >>>>', false, self.log_file)
-				debug.write(netconf.hello(self.capabilities), false, self.log_file)
-				debug.write('---- msg netconf hello ----', false, self.log_file)
-
-				stream.write(netconf.hello(self.capabilities));
-			}
-
-			stream.on('data', function(data, extended)
-			{
-				debug.write('.... received (partial) msg, len: ' + data.toString().length, false, self.log_file)
-				debug.write('<<<< partial msg <<<<', false, self.log_file)
-				debug.write(data.toString(), false, self.log_file)
-				debug.write('---- partial msg ----', false, self.log_file)
-
-				self.buffer += data.toString();
-
-				debug.write('.... processing incoming request', true, self.log_file)
-				netconf.process_message(self, process_request)
-
-				function process_request(request)
+				ssh.subsys('netconf', function(error, stream)
 				{
-					debug.write('<<<< msg netconf <<<<', false, self.log_file)
-					debug.write(request, false, self.log_file)
-					debug.write('---- msg netconf ----', false, self.log_file)
-
-					xml2js.parseString(request, function(error, data)
+					if (error)
 					{
-						if (error)
+						ssh.end()
+						reject && reject(error)
+
+						return
+					}
+
+					con = stream
+
+					debug.write('... netconf subsystem acquired', true, self.log_file)
+
+					if (self.send_hello_message)
+					{
+						debug.write('.... sending client hello', true, self.log_file)
+						debug.write('>>>> msg netconf hello >>>>', false, self.log_file)
+						debug.write(netconf.hello(self.capabilities), false, self.log_file)
+						debug.write('---- msg netconf hello ----', false, self.log_file)
+
+						stream.write(netconf.hello(self.capabilities));
+					}
+
+					stream.on('error', function(error)
+					{
+						debug.write('.. ssh stream close', true, self.log_file)
+						ssh.end()
+						reject && reject(error)
+						//self.emit('error', error)
+					})
+
+					stream.on('close', function()
+					{
+						debug.write('.. ssh stream close', true, self.log_file)
+						ssh.end();
+						//self.emit('end')
+					});
+
+					stream.on('data', function(data, extended)
+					{
+						debug.write('.... received (partial) msg, len: ' + data.toString().length, false, self.log_file)
+						debug.write('<<<< partial msg <<<<', false, self.log_file)
+						debug.write(data.toString(), false, self.log_file)
+						debug.write('---- partial msg ----', false, self.log_file)
+
+						self.buffer += data.toString();
+
+						debug.write('.... processing incoming request', true, self.log_file)
+						netconf.process_message(self, process_request)
+
+						function process_request(request)
 						{
-							debug.write('.... xml parsing failed', true, self.log_file)
-							debug.write(error, false, self.log_file)
+							debug.write('<<<< msg netconf <<<<', false, self.log_file)
+							debug.write(request, false, self.log_file)
+							debug.write('---- msg netconf ----', false, self.log_file)
 
-							return self.emit('error', error)
-						}
-
-						if (data["hello"])
-						{
-							if (netconf_ready)
+							xml2js.parseString(request, function(error, data)
 							{
-								debug.write('..... hello received at the wrong stage', true, self.log_file)
-								return self.emit('error', 'hello received at the wrong stage')
-							}
-
-							debug.write('..... hello', true, self.log_file)
-							netconf_ready = 1
-
-							var capabilities = data["hello"]["capabilities"][0].capability;
-
-							for (var i in capabilities)
-							{
-								debug.write('...... capability - ' + capabilities[i], true, self.log_file)
-
-								if (capabilities[i] == 'urn:ietf:params:netconf:base:1.1')
+								if (error)
 								{
-									self.netconf_base = 1;
+									debug.write('.... xml parsing failed', true, self.log_file)
+									debug.write(error, false, self.log_file)
+
+									return self.emit('error', error)
 								}
-							}
 
-							callback && callback()
+								if (data["hello"])
+								{
+									if (netconf_ready)
+									{
+										debug.write('..... hello received at the wrong stage', true, self.log_file)
+										return self.emit('error', 'hello received at the wrong stage')
+									}
 
-							return
-						}
+									debug.write('..... hello', true, self.log_file)
+									netconf_ready = 1
 
-						if (data["rpc-reply"])
-						{
-							var msg_id = data["rpc-reply"].$["message-id"]
-							if (typeof messages_queue[msg_id] === 'undefined')
-							{
-								debug.write('..... rpc-reply with incorrect message id', true, self.log_file)
-								return self.emit('error', "rpc-reply with incorrect message id")
-							}
+									var capabilities = data["hello"]["capabilities"][0].capability;
 
-							debug.write('..... rpc-reply', true, self.log_file)
-							self.emit('rpc-reply', data['rpc-reply'])
+									for (var i in capabilities)
+									{
+										debug.write('...... capability - ' + capabilities[i], true, self.log_file)
 
-							messages_queue[msg_id](null, request)
-							delete messages_queue[msg_id]
+										if (capabilities[i] == 'urn:ietf:params:netconf:base:1.1')
+										{
+											self.netconf_base = 1;
+										}
+									}
+
+									resolve(self)
+									return
+								}
+
+								if (data["rpc-reply"])
+								{
+									var msg_id = data["rpc-reply"].$["message-id"]
+									if (typeof messages_queue[msg_id] === 'undefined')
+									{
+										debug.write('..... rpc-reply with incorrect message id', true, self.log_file)
+										return self.emit('error', "rpc-reply with incorrect message id")
+									}
+
+									debug.write('..... rpc-reply', true, self.log_file)
+									//self.emit('rpc-reply', data['rpc-reply'])
+
+									messages_queue[msg_id](request)
+									delete messages_queue[msg_id]
+								}
+							})
 						}
 					})
+				})
+			})
+
+			ssh.on('error', function(error)
+			{
+				if (!netconf_ready)
+				{
+					reject && reject(error)
+					return
 				}
-			})
 
-			stream.on('close', function()
-			{
-				debug.write('.. ssh stream close', true, self.log_file)
-				ssh.end();
-				self.emit('end')
-			});
-
-			stream.on('error', function(error)
-			{
-				debug.write('.. ssh stream close', true, self.log_file)
-				ssh.end()
+				debug.write('.. ssh connection closed due to error', true, self.log_file)
+				debug.write(error, false, self.log_file)
+				fs.closeSync(self.log_file);
 				self.emit('error', error)
+				reject && reject(error)
 			})
 
-		});
-	});
+			ssh.on('close', function(had_error)
+			{
+				debug.write('.. ssh connection closed', true, self.log_file)
+				fs.closeSync(self.log_file);
+			});
+		})
+	}
 
-	ssh.on('error', function(error)
+	this.send = function(message)
 	{
-		if (!netconf_ready)
+		return new Promise(function(resolve, reject)
 		{
-			callback && callback(error)
+			if (!con)
+			{
+				debug.write('... ssh stream has not been established', true, self.log_file)
+				reject && reject('ssh stream has not been established')
+			}
 
-			return
-		}
+			if (!netconf_ready)
+			{
+				debug.write('... netconf not ready, hello message has not been exchanged', true, self.log_file)
+				reject && reject('netconf not ready, hello message has not been exchanged')
+			}
 
-		debug.write('.. ssh connection closed due to error', true, self.log_file)
-		debug.write(error, false, self.log_file)
-		fs.closeSync(self.log_file);
-		self.emit('error', error)
-	})
+			// create netconf message
+			var xml_message = netconf.create_rpc_message(message, self.netconf_base, message_id)
 
-	ssh.on('close', function(had_error)
-	{
-		debug.write('.. ssh connection closed', true, self.log_file)
-		fs.closeSync(self.log_file);
-	});
+			// add message to global queue
+			messages_queue[message_id++] = resolve
 
+			// send message via ssh
+			con.write(xml_message);
 
-	this.send = function(message, callback)
-	{
-		if (!con)
-		{
-			debug.write('... ssh stream has not been established', true, self.log_file)
-			return self.emit('error', 'ssh stream has not been established')
-		}
-
-		if (!netconf_ready)
-		{
-			debug.write('... netconf not ready, hello message has not been exchanged', true, self.log_file)
-			return self.emit('error', 'netconf not ready, hello message has not been exchanged')
-		}
-
-		// create netconf message
-		var xml_message = netconf.create_rpc_message(message, self.netconf_base, message_id)
-
-		// add message to global queue
-		messages_queue[message_id++] = callback
-
-		// send message via ssh
-		con.write(xml_message);
-
-		debug.write('>>>> msg netconf >>>>', false, self.log_file)
-		debug.write(xml_message, false, self.log_file)
-		debug.write('---- msg netconf ----', false, self.log_file)
+			debug.write('>>>> msg netconf >>>>', false, self.log_file)
+			debug.write(xml_message, false, self.log_file)
+			debug.write('---- msg netconf ----', false, self.log_file)
+		})
 	}
 
 	// standard netconf rpcs
-	this.send_get = function(filter, callback)
+	this.send_get = function(filter)
 	{
-		if (!callback && typeof filter == 'function')
-			callback = filter
-
-		self.send(netconf.get(filter), callback)
-
 		debug.write('.... sending msg (get)', true, self.log_file)
+		return self.send(netconf.get(filter))
 	}
 
 	this.send_get_config = function(filter)
 	{
-		if (!callback && typeof filter == 'function')
-			callback = filter
-
-		self.send(netconf.get_config(filter), callback)
-
 		debug.write('.... sending msg (get-config)', true, self.log_file)
+		return self.send(netconf.get_config(filter))
 	}
 
-	this.send_close = function(callback)
+	this.send_close = function()
 	{
-		self.send(netconf.close(), callback)
-
 		debug.write('.... sending msg (close-session)', true, self.log_file)
+		//setBreakpoint().sb()
+		return self.send(netconf.close())
 	}
 
-	this.send_kill = function(session_id, callback)
+	this.send_kill = function(session_id)
 	{
-		if (!callback && typeof session_id == 'function')
-			callback = session_id
-
-		self.send(netconf.kill(session_id), callback)
-
 		debug.write('.... sending msg (kill-session)', true, self.log_file)
+		return self.send(netconf.kill(session_id))
 	}
 
-	this.send_get_schema = function(schema, callback)
+	this.send_get_schema = function(schema)
 	{
 		if (!schema || !("identifier" in schema)) {
-			return callback('missing mandatory argument "identifier" in schema')
+			return new Promise.reject('missing mandatory argument "identifier" in schema')
 		}
 
-		if (!filter && typeof schema == 'function')
-			callback = schema
-
-		self.send(netconf.get_schema(schema), callback)
-
 		debug.write('.... sending msg (get-schema)', true, self.log_file)
+		return self.send(netconf.get_schema(schema))
 	}
+
+	return startSshClientSession(ssh_opts)
 }
 
 util.inherits(client, events.EventEmitter);
 
-exports.create = function(opts, callback)
+exports.create = function(opts)
 {
-	if (!arguments.length)
-		return
-
-	if (typeof callback === 'undefined' && opts !== 'undefined')
-		callback = opts
-
-	if (typeof callback != 'function')
-		return
-
-	return new client(opts, callback);
+	return client(opts)
 }
