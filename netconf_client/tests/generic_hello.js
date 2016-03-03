@@ -17,21 +17,5 @@ var netconf_client = require('../netconf_client')
 
 var client = netconf_client.create().then(function(client)
 {
-	client.send_close().then(function(success)
-	{
-		console.log(success)
-		process.exit(0)
-	},
-	function(reject)
-	{
-		console.log(reject)
-		process.exit(1)
-	})
-},
-function(error)
-{
-	process.exit(1)
-})
-.finally(function()
-{
+	client.send_close().then()
 })

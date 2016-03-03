@@ -27,30 +27,6 @@ var client = netconf_client.create().then(function(client)
 {
 	client.send(xml).then(function(success)
 	{
-		console.log(success)
-		process.exit(0)
-
-		client.send_close().then(function(success)
-		{
-			console.log(success)
-			process.exit(0)
-		},
-		function(reject)
-		{
-			console.log(reject)
-			process.exit(1)
-		})
-	},
-	function(reject)
-	{
-		console.log(reject)
-		process.exit(1)
+		client.send_close().then()
 	})
-},
-function(error)
-{
-	process.exit(1)
-})
-.finally(function()
-{
 })

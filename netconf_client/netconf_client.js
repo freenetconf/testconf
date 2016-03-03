@@ -206,7 +206,6 @@ var client = function(options)
 									}
 
 									debug.write('..... rpc-reply', true, self.log_file)
-									//self.emit('rpc-reply', data['rpc-reply'])
 
 									messages_queue[msg_id](request)
 									delete messages_queue[msg_id]
@@ -242,7 +241,7 @@ var client = function(options)
 
 	this.send = function(message)
 	{
-		return new Promise(function(resolve, reject)
+		var promise = new Promise(function(resolve, reject)
 		{
 			if (!con)
 			{
@@ -269,6 +268,30 @@ var client = function(options)
 			debug.write(xml_message, false, self.log_file)
 			debug.write('---- msg netconf ----', false, self.log_file)
 		})
+
+		promise.thenDefault = function(resolve, reject)
+		{
+			if (typeof resolve === 'undefined')
+			{
+				resolve = function(success)
+				{
+					process.exit(0)
+				}
+			}
+
+			if (typeof reject === 'undefined')
+			{
+				reject = function(error)
+				{
+					console.error(error)
+					process.exit(1)
+				}
+			}
+
+			return promise.then(resolve, reject)
+		}
+
+		return promise
 	}
 
 	// standard netconf rpcs
