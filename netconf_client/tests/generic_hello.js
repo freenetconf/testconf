@@ -15,7 +15,7 @@
 
 var netconf_client = require('../netconf_client')
 
-var client = netconf_client.create().then(function(client)
+netconf_client.create().then(function(client)
 {
-	client.send_close().then()
+	client.send_close().thenDefault()
 })

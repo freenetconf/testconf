@@ -14,6 +14,7 @@
  */
 
 var netconf_client = require('../netconf_client')
+var util = require('util');
 	
 var xml = "<get>" +
 		"<filter>" +
@@ -23,10 +24,12 @@ var xml = "<get>" +
 		"</filter>" +
 	"</get>"
 
-var client = netconf_client.create().then(function(client)
+netconf_client.create().then(function(client)
 {
-	client.send(xml).then(function(success)
+	client.send(xml).thenDefault(function(reply)
 	{
-		client.send_close().then()
+		console.log(reply)
+		console.log(util.inspect(reply, {showHidden: false, depth: null}));
+		client.send_close().thenDefault()
 	})
 })
