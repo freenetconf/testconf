@@ -13,68 +13,29 @@
  */
 
 var netconf_client = require('../../../netconf_client')
+var util = require('util');
 
-var client = netconf_client.create(function(error)
+var xml = "<edit-config xmlns:nc='urn:ietf:params:xml:ns:netconf:base:1.0'>" +
+		"<target><running/></target>" +
+		"<config>" +
+			"<interfaces-state xmlns='urn:ietf:params:xml:ns:yang:ietf-ip'>" +
+				"<interface>" +
+					"<name>eth0</name>" +
+						"<ipv4>" +
+							"<mtu>1000</mtu>" +
+						"</ipv4>" +
+				"</interface>" +
+			"</interfaces-state>" +
+		"</config>" +
+	"</edit-config>"
+
+netconf_client.create().then(function(client)
 {
-	if (error)
+
+	client.send(xml).thenDefault(function(reply)
 	{
-		console.error(error)
-		process.exit(1)
-	}
-
-	var xml
-
-	xml = "<edit-config xmlns:nc='urn:ietf:params:xml:ns:netconf:base:1.0'>" +
-			"<target><running/></target>" +
-			"<config>" +
-				"<interfaces-state xmlns='urn:ietf:params:xml:ns:yang:ietf-ip'>" +
-					"<interface>" +
-						"<name>eth0</name>" +
-							"<ipv4>" +
-								"<mtu>1000</mtu>" +
-							"</ipv4>" +
-					"</interface>" +
-				"</interfaces-state>" +
-			"</config>" +
-		"</edit-config>"
-
-	client.send(xml, function(error, reply)
-	{
-		if (error)
-		{
-			console.error(error)
-			process.exit(1)
-		}
-
-		client.send_close(function(error, reply)
-		{
-			if (error)
-			{
-				console.error(error)
-				process.exit(1)
-			}
-			else
-			{
-				process.exit(0)
-			}
-
-		})
+		console.log(reply)
+		console.log(util.inspect(reply, {showHidden: false, depth: null}));
+		client.send_close().thenDefault()
 	})
-})
-
-client.on('rpc-reply', function(reply)
-{
-	var util = require('util');
-	console.log(reply.data)
-	console.log(util.inspect(reply.data, {showHidden: false, depth: null}));
-})
-
-client.on('error', function(error)
-{
-	console.error(error)
-	process.exit(1)
-})
-
-client.on('end', function(error)
-{
 })

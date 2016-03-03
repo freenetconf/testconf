@@ -13,58 +13,18 @@
  */
 
 var netconf_client = require('../../../netconf_client')
+var util = require('util');
 
-var client = netconf_client.create(function(error)
+var xml =	'<set-current-datetime xmlns="urn:ietf:params:xml:ns:yang:ietf-system-openwrt" >' +
+		'<current-datetime>"2014-12-25 12:34:56"</current-datetime>' +
+	'</set-current-datetime>'
+
+netconf_client.create().then(function(client)
 {
-	if (error)
+	client.send(xml).thenDefault(function(reply)
 	{
-		console.error(error)
-		process.exit(1)
-	}
-
-	var xml
-
-	xml =	'<set-current-datetime xmlns="urn:ietf:params:xml:ns:yang:ietf-system-openwrt" >' +
-			'<current-datetime>"2014-12-25 12:34:56"</current-datetime>' +
-		'</set-current-datetime>'
-
-	client.send(xml, function(error, reply)
-	{
-		if (error)
-		{
-			console.error(error)
-			process.exit(1)
-		}
-
-		client.send_close(function(error, reply)
-		{
-			if (error)
-			{
-				console.error(error)
-				process.exit(1)
-			}
-			else
-			{
-				process.exit(0)
-			}
-
-		})
+		console.log(reply)
+		console.log(util.inspect(reply, {showHidden: false, depth: null}));
+		client.send_close().thenDefault()
 	})
-})
-
-client.on('rpc-reply', function(reply)
-{
-	var util = require('util');
-	console.log(reply.data)
-	console.log(util.inspect(reply.data, {showHidden: false, depth: null}));
-})
-
-client.on('error', function(error)
-{
-	console.error(error)
-	process.exit(1)
-})
-
-client.on('end', function(error)
-{
 })

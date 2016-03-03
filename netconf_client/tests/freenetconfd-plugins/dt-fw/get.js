@@ -13,60 +13,20 @@
  */
 
 var netconf_client = require('../../../netconf_client')
+var util = require('util');
 
-var client = netconf_client.create(function(error)
+// get system state with all firmware-slot and firmware-job config sections
+var xml = '<get><filter type="subtree">' +
+		'<system-state xmlns="urn:ietf:params:xml:ns:yang:ietf-system-openwrt">' +
+		'</system-state>' +
+	'</filter></get>'
+
+netconf_client.create().then(function(client)
 {
-	if (error)
+	client.send(xml).thenDefault(function(reply)
 	{
-		console.error(error)
-		process.exit(1)
-	}
-
-	var xml
-
-	// get system state with all firmware-slot and firmware-job config sections
-	xml = '<get><filter type="subtree">' +
-			'<system-state xmlns="urn:ietf:params:xml:ns:yang:ietf-system-openwrt">' +
-			'</system-state>' +
-		'</filter></get>'
-
-	client.send(xml, function(error, reply)
-	{
-		if (error)
-		{
-			console.error(error)
-			process.exit(1)
-		}
-
-		client.send_close(function(error, reply)
-		{
-			if (error)
-			{
-				console.error(error)
-				process.exit(1)
-			}
-			else
-			{
-				process.exit(0)
-			}
-
-		})
+		console.log(reply)
+		console.log(util.inspect(reply, {showHidden: false, depth: null}));
+		client.send_close().thenDefault()
 	})
-})
-
-client.on('rpc-reply', function(reply)
-{
-	var util = require('util');
-	console.log(reply.data)
-	console.log(util.inspect(reply.data, {showHidden: false, depth: null}));
-})
-
-client.on('error', function(error)
-{
-	console.error(error)
-	process.exit(1)
-})
-
-client.on('end', function(error)
-{
 })

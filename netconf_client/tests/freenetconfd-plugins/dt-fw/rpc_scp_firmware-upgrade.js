@@ -13,69 +13,27 @@
  */
 
 var netconf_client = require('../../../netconf_client')
+var util = require('util');
 
-var client = netconf_client.create(function(error)
+var address = "address"
+var password = "password"
+
+var xml =	'<firmware-download   xmlns="urn:ietf:params:xml:ns:yang:ietf-system-openwrt" >' +
+		'<address>' + address + '</address>' +
+		'<install-target>test_1</install-target>' +
+		'<timeframe                >0</timeframe>' +
+		'<retry-count              >3</retry-count>' +
+		'<retry-interval           >5</retry-interval>' +
+		'<retry-interval-increment >20</retry-interval-increment>' +
+		'<password                 >' + password + '</password>' +
+	'</firmware-download>'
+
+netconf_client.create().then(function(client)
 {
-	if (error)
+	client.send(xml).thenDefault(function(reply)
 	{
-		console.error(error)
-		process.exit(1)
-	}
-
-	var xml
-
-	var address = "address"
-	var password = "password"
-
-	var xml
-
-	xml =	'<firmware-download   xmlns="urn:ietf:params:xml:ns:yang:ietf-system-openwrt" >' +
-			'<address>' + address + '</address>' +
-			'<install-target>test_1</install-target>' +
-			'<timeframe                >0</timeframe>' +
-			'<retry-count              >3</retry-count>' +
-			'<retry-interval           >5</retry-interval>' +
-			'<retry-interval-increment >20</retry-interval-increment>' +
-			'<password                 >' + password + '</password>' +
-		'</firmware-download>'
-
-	client.send(xml, function(error, reply)
-	{
-		if (error)
-		{
-			console.error(error)
-			process.exit(1)
-		}
-
-		client.send_close(function(error, reply)
-		{
-			if (error)
-			{
-				console.error(error)
-				process.exit(1)
-			}
-			else
-			{
-				process.exit(0)
-			}
-
-		})
+		console.log(reply)
+		console.log(util.inspect(reply, {showHidden: false, depth: null}));
+		client.send_close().thenDefault()
 	})
-})
-
-client.on('rpc-reply', function(reply)
-{
-	var util = require('util');
-	console.log(reply.data)
-	console.log(util.inspect(reply.data, {showHidden: false, depth: null}));
-})
-
-client.on('error', function(error)
-{
-	console.error(error)
-	process.exit(1)
-})
-
-client.on('end', function(error)
-{
 })

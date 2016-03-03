@@ -13,99 +13,46 @@
  */
 
 var netconf_client = require('../../../netconf_client')
+var util = require('util')
 
-var client = netconf_client.create(function(error)
+// delete uci config section with name test_1
+var xml_test1 = "<edit-config xmlns:nc='urn:ietf:params:xml:ns:netconf:base:1.0'>" +
+	"<target><running/></target>" +
+		"<config>" +
+		'<system-state xmlns="urn:ietf:params:xml:ns:yang:ietf-system-openwrt">' +
+			'<firmware-slot  nc:operation="delete" >' +
+				"<name    >test_1</name>" +
+			'</firmware-slot>' +
+		'</system-state>' +
+		"</config>" +
+	'</edit-config>'
+
+	
+// delete uci config section with name test_2
+var xml_test2 = "<edit-config xmlns:nc='urn:ietf:params:xml:ns:netconf:base:1.0'>" +
+	"<target><running/></target>" +
+		"<config>" +
+		'<system-state xmlns="urn:ietf:params:xml:ns:yang:ietf-system-openwrt">' +
+			'<firmware-slot  nc:operation="delete" >' +
+				"<name    >test_2</name>" +
+			'</firmware-slot>' +
+		'</system-state>' +
+		"</config>" +
+	'</edit-config>'
+
+netconf_client.create().then(function(client)
 {
-	if (error)
+	client.send(xml_test1).thenDefault(function(reply)
 	{
-		console.error(error)
-		process.exit(1)
-	}
-
-	var xml
-
-	// delete uci config section with name test_1
-	xml = "<edit-config xmlns:nc='urn:ietf:params:xml:ns:netconf:base:1.0'>" +
-		"<target><running/></target>" +
-			"<config>" +
-			'<system-state xmlns="urn:ietf:params:xml:ns:yang:ietf-system-openwrt">' +
-				'<firmware-slot  nc:operation="delete" >' +
-					"<name    >test_1</name>" +
-				'</firmware-slot>' +
-			'</system-state>' +
-			"</config>" +
-		'</edit-config>'
-
-	client.send(xml, function(error, reply)
-	{
-		if (error)
-		{
-			console.error(error)
-			process.exit(1)
-		}
-
-		client.send_close(function(error, reply)
-		{
-			if (error)
-			{
-				console.error(error)
-				process.exit(1)
-			}
-			else
-			{
-				process.exit(0)
-			}
-		})
+		console.log(reply)
+		console.log(util.inspect(reply, {showHidden: false, depth: null}));
+		client.send_close().thenDefault()
 	})
 
-	// delete uci config section with name test_2
-	xml = "<edit-config xmlns:nc='urn:ietf:params:xml:ns:netconf:base:1.0'>" +
-		"<target><running/></target>" +
-			"<config>" +
-			'<system-state xmlns="urn:ietf:params:xml:ns:yang:ietf-system-openwrt">' +
-				'<firmware-slot  nc:operation="delete" >' +
-					"<name    >test_2</name>" +
-				'</firmware-slot>' +
-			'</system-state>' +
-			"</config>" +
-		'</edit-config>'
-
-	client.send(xml, function(error, reply)
+	client.send(xml_test2).thenDefault(function(reply)
 	{
-		if (error)
-		{
-			console.error(error)
-			process.exit(1)
-		}
-
-		client.send_close(function(error, reply)
-		{
-			if (error)
-			{
-				console.error(error)
-				process.exit(1)
-			}
-			else
-			{
-				process.exit(0)
-			}
-		})
+		console.log(reply)
+		console.log(util.inspect(reply, {showHidden: false, depth: null}));
+		client.send_close().thenDefault()
 	})
-})
-
-client.on('rpc-reply', function(reply)
-{
-	var util = require('util');
-	console.log(reply.data)
-	console.log(util.inspect(reply.data, {showHidden: false, depth: null}));
-})
-
-client.on('error', function(error)
-{
-	console.error(error)
-	process.exit(1)
-})
-
-client.on('end', function(error)
-{
 })

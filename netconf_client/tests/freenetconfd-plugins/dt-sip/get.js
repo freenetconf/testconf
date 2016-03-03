@@ -13,109 +13,40 @@
  */
 
 var netconf_client = require('../../../netconf_client')
+var util = require('util');
 
-var client = netconf_client.create(function(error)
+// get all uci ext sections
+var xml_ext = '<get><filter type="subtree"><extension xmlns="urn:ietf:params:xml:ns:yang:sip"/></filter></get>'
+
+// get uci section general
+var xml_general = '<get><filter type="subtree"><general xmlns="urn:ietf:params:xml:ns:yang:sip"/></filter></get>'
+
+// get uci section trunk
+var xml_trunk = '<get><filter type="subtree"><trunk xmlns="urn:ietf:params:xml:ns:yang:sip"/></filter></get>'
+
+var printDebug = function(reply)
 {
-	if (error)
+	console.log(reply)
+	console.log(util.inspect(reply, {showHidden: false, depth: null}));
+}
+
+netconf_client.create().then(function(client)
+{
+	client.send(xml_ext).thenDefault(function(reply)
 	{
-		console.error(error)
-		process.exit(1)
-	}
-
-	var xml
-
-	// get all uci ext sections
-	xml = '<get><filter type="subtree"><extension xmlns="urn:ietf:params:xml:ns:yang:sip"/></filter></get>'
-
-	client.send(xml, function(error, reply)
-	{
-		if (error)
-		{
-			console.error(error)
-			process.exit(1)
-		}
-
-		client.send_close(function(error, reply)
-		{
-			if (error)
-			{
-				console.error(error)
-				process.exit(1)
-			}
-			else
-			{
-				process.exit(0)
-			}
-
-		})
+		printDebug(reply)
+		client.send_close().thenDefault()
 	})
 
-	// get uci section general
-	xml = '<get><filter type="subtree"><general xmlns="urn:ietf:params:xml:ns:yang:sip"/></filter></get>'
-
-	client.send(xml, function(error, reply)
+	client.send(xml_general).thenDefault(function(reply)
 	{
-		if (error)
-		{
-			console.error(error)
-			process.exit(1)
-		}
-
-		client.send_close(function(error, reply)
-		{
-			if (error)
-			{
-				console.error(error)
-				process.exit(1)
-			}
-			else
-			{
-				process.exit(0)
-			}
-
-		})
+		printDebug(reply)
+		client.send_close().thenDefault()
 	})
 
-	// get uci section trunk
-	xml = '<get><filter type="subtree"><trunk xmlns="urn:ietf:params:xml:ns:yang:sip"/></filter></get>'
-
-	client.send(xml, function(error, reply)
+	client.send(xml_trunk).thenDefault(function(reply)
 	{
-		if (error)
-		{
-			console.error(error)
-			process.exit(1)
-		}
-
-		client.send_close(function(error, reply)
-		{
-			if (error)
-			{
-				console.error(error)
-				process.exit(1)
-			}
-			else
-			{
-				process.exit(0)
-			}
-
-		})
+		printDebug(reply)
+		client.send_close().thenDefault()
 	})
-})
-
-client.on('rpc-reply', function(reply)
-{
-	var util = require('util');
-	console.log(reply.data)
-	console.log(util.inspect(reply.data, {showHidden: false, depth: null}));
-})
-
-client.on('error', function(error)
-{
-	console.error(error)
-	process.exit(1)
-})
-
-client.on('end', function(error)
-{
 })

@@ -13,164 +13,80 @@
  */
 
 var netconf_client = require('../../../netconf_client')
+var util = require('util');
 
-var client = netconf_client.create(function(error)
+// delete config section ext with name 1000
+var xml_1000 = "<edit-config xmlns:nc='urn:ietf:params:xml:ns:netconf:base:1.0'>" +
+		"<target><running/></target>" +
+		"<config>" +
+			"<extension xmlns='urn:ietf:params:xml:ns:yang:sip'>" +
+				"<ext  nc:operation='delete'>" +
+					"<name>1000</name>" +
+			"</extension>" +
+		"</config>" +
+	"</edit-config>"
+
+// delete config section ext with name 1234
+var xml_1234 = "<edit-config xmlns:nc='urn:ietf:params:xml:ns:netconf:base:1.0'>" +
+		"<target><running/></target>" +
+		"<config>" +
+			"<extension xmlns='urn:ietf:params:xml:ns:yang:sip'>" +
+				"<ext nc:operation='delete'>" +
+					"<name>1234</name>" +
+				"</ext>" +
+			"</extension>" +
+		"</config>" +
+	"</edit-config>"
+
+// delete config section general
+var xml_general = "<edit-config xmlns:nc='urn:ietf:params:xml:ns:netconf:base:1.0'>" +
+		"<target><running/></target>" +
+		"<config>" +
+			"<general nc:operation='delete' xmlns='urn:ietf:params:xml:ns:yang:sip'>" +
+			"</general>" +
+		"</config>" +
+	"</edit-config>"
+
+// delete config section trunk
+var xml = "<edit-config xmlns:nc='urn:ietf:params:xml:ns:netconf:base:1.0'>" +
+		"<target><running/></target>" +
+		"<config>" +
+			"<trunk nc:operation='delete' xmlns='urn:ietf:params:xml:ns:yang:sip'>" +
+			"</trunk>" +
+		"</config>" +
+	"</edit-config>"
+
+var printDebug = function(reply)
 {
-	if (error)
+	console.log(reply)
+	console.log(util.inspect(reply, {showHidden: false, depth: null}));
+}
+
+netconf_client.create().then(function(client)
+{
+	client.send(xml_1000).thenDefault(function(reply)
 	{
-		console.error(error)
-		process.exit(1)
-	}
-
-	// delete config section ext with name 1000
-	xml = "<edit-config xmlns:nc='urn:ietf:params:xml:ns:netconf:base:1.0'>" +
-			"<target><running/></target>" +
-			"<config>" +
-				"<extension xmlns='urn:ietf:params:xml:ns:yang:sip'>" +
-					"<ext  nc:operation='delete'>" +
-						"<name>1000</name>" +
-				"</extension>" +
-			"</config>" +
-		"</edit-config>"
-
-	client.send(xml, function(error, reply)
-	{
-		if (error)
-		{
-			console.error(error)
-			process.exit(1)
-		}
-
-		client.send_close(function(error, reply)
-		{
-			if (error)
-			{
-				console.error(error)
-				process.exit(1)
-			}
-			else
-			{
-				process.exit(0)
-			}
-
-		})
-	})
-
-	// delete config section ext with name 1234
-	xml = "<edit-config xmlns:nc='urn:ietf:params:xml:ns:netconf:base:1.0'>" +
-			"<target><running/></target>" +
-			"<config>" +
-				"<extension xmlns='urn:ietf:params:xml:ns:yang:sip'>" +
-					"<ext nc:operation='delete'>" +
-						"<name>1234</name>" +
-					"</ext>" +
-				"</extension>" +
-			"</config>" +
-		"</edit-config>"
-
-	client.send(xml, function(error, reply)
-	{
-		if (error)
-		{
-			console.error(error)
-			process.exit(1)
-		}
-
-		client.send_close(function(error, reply)
-		{
-			if (error)
-			{
-				console.error(error)
-				process.exit(1)
-			}
-			else
-			{
-				process.exit(0)
-			}
-
-		})
+		printDebug(reply)
+		client.send_close().thenDefault()
 	})
 
 
-	// delete config section general
-	xml = "<edit-config xmlns:nc='urn:ietf:params:xml:ns:netconf:base:1.0'>" +
-			"<target><running/></target>" +
-			"<config>" +
-				"<general nc:operation='delete' xmlns='urn:ietf:params:xml:ns:yang:sip'>" +
-				"</general>" +
-			"</config>" +
-		"</edit-config>"
-
-	client.send(xml, function(error, reply)
+	client.send(xml_1234).thenDefault(function(reply)
 	{
-		if (error)
-		{
-			console.error(error)
-			process.exit(1)
-		}
-
-		client.send_close(function(error, reply)
-		{
-			if (error)
-			{
-				console.error(error)
-				process.exit(1)
-			}
-			else
-			{
-				process.exit(0)
-			}
-
-		})
+		printDebug(reply)
+		client.send_close().thenDefault()
 	})
 
-	// delete config section trunk
-	xml = "<edit-config xmlns:nc='urn:ietf:params:xml:ns:netconf:base:1.0'>" +
-			"<target><running/></target>" +
-			"<config>" +
-				"<trunk nc:operation='delete' xmlns='urn:ietf:params:xml:ns:yang:sip'>" +
-				"</trunk>" +
-			"</config>" +
-		"</edit-config>"
-
-	client.send(xml, function(error, reply)
+	client.send(xml_general).thenDefault(function(reply)
 	{
-		if (error)
-		{
-			console.error(error)
-			process.exit(1)
-		}
-
-		client.send_close(function(error, reply)
-		{
-			if (error)
-			{
-				console.error(error)
-				process.exit(1)
-			}
-			else
-			{
-				process.exit(0)
-			}
-
-		})
+		printDebug(reply)
+		client.send_close().thenDefault()
 	})
 
-})
 
-client.on('rpc-reply', function(reply)
-{
-	var util = require('util');
-	console.log(reply.data)
-	console.log(util.inspect(reply.data, {showHidden: false, depth: null}));
-})
-
-client.on('error', function(error)
-{
-	console.error(error)
-	process.exit(1)
-})
-
-client.on('end', function(error)
-{
+	client.send(xml).thenDefault(function(reply)
+	{
+		printDebug(reply)
+		client.send_close().thenDefault()
+	})
 })
