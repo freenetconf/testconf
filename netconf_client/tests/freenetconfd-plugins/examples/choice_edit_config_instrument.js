@@ -14,58 +14,26 @@
  */
 
 var netconf_client = require('../../../netconf_client')
+var util = require('util')
 
-var client = netconf_client.create(function(error)
+var xml = "<edit-config xmlns:nc='urn:ietf:params:xml:ns:netconf:base:1.0'>" +
+		"<target><running/></target>" +
+		"<config>" +
+			"<player xmlns='urn:ietf:params:xml:ns:yang:choice'>" +
+			"<instrument>" +
+				"<name>Guitar</name>" +
+				"<strings>8</strings>" +
+			"</instrument>" +
+			"</player>" +
+		"</config>" +
+	"</edit-config>"
+
+netconf_client.create().then(function(client)
 {
-	if (error)
+	client.send(xml).thenDefault(function(reply)
 	{
-		console.error(error)
-		process.exit(1)
-	}
-
-	var xml = "<edit-config xmlns:nc='urn:ietf:params:xml:ns:netconf:base:1.0'>" +
-			"<target><running/></target>" +
-			"<config>" +
-			  "<player xmlns='urn:ietf:params:xml:ns:yang:choice'>" +
-				"<instrument>" +
-				  "<name>Guitar</name>" +
-				  "<strings>8</strings>" +
-				"</instrument>" +
-			  "</player>" +
-			"</config>" +
-		"</edit-config>"
-
-	client.send(xml, function(error, reply)
-	{
-		if (error)
-		{
-			console.error(error)
-			process.exit(1)
-		}
-
-		client.send_close(function(error, reply)
-		{
-			if (error)
-			{
-				console.error(error)
-				process.exit(1)
-			}
-			else
-			{
-				process.exit(0)
-			}
-		})
+		console.log(reply)
+		console.log(util.inspect(reply, {showHidden: false, depth: null}));
+		client.send_close().thenDefault()
 	})
-})
-
-client.on('rpc-reply', function(reply)
-{
-})
-
-client.on('error', function(error)
-{
-})
-
-client.on('end', function(error)
-{
 })

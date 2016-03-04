@@ -14,63 +14,31 @@
  */
 
 var netconf_client = require('../../../netconf_client')
+var util = require('util')
 
-var client = netconf_client.create(function(error)
+var xml = "<edit-config xmlns:nc='urn:ietf:params:xml:ns:netconf:base:1.0'>" +
+		"<target><running/></target>" +
+		"<config>" +
+			"<black-book xmlns='urn:ietf:params:xml:ns:yang:black-book'>" +
+				 "<count>5</count>" +
+				 "<person>" +
+					"<name>Jennifer</name>" +
+					"<phone>09176547</phone>" +
+				 "</person>" +
+				 "<person>" +
+					"<name>Scarlet</name>" +
+					"<phone>0912346456</phone>" +
+				 "</person>" +
+			"</black-book>" +
+		"</config>" +
+	"</edit-config>"
+
+netconf_client.create().then(function(client)
 {
-	if (error)
+	client.send(xml).thenDefault(function(reply)
 	{
-		console.error(error)
-		process.exit(1)
-	}
-
-	var xml = "<edit-config xmlns:nc='urn:ietf:params:xml:ns:netconf:base:1.0'>" +
-			"<target><running/></target>" +
-			"<config>" +
-				"<black-book xmlns='urn:ietf:params:xml:ns:yang:black-book'>" +
-					 "<count>5</count>" +
-					 "<person>" +
-						"<name>Jennifer</name>" +
-						"<phone>09176547</phone>" +
-					 "</person>" +
-					 "<person>" +
-						"<name>Scarlet</name>" +
-						"<phone>0912346456</phone>" +
-					 "</person>" +
-				"</black-book>" +
-			"</config>" +
-		"</edit-config>"
-
-	client.send(xml, function(error, reply)
-	{
-		if (error)
-		{
-			console.error(error)
-			process.exit(1)
-		}
-
-		client.send_close(function(error, reply)
-		{
-			if (error)
-			{
-				console.error(error)
-				process.exit(1)
-			}
-			else
-			{
-				process.exit(0)
-			}
-		})
+		console.log(reply)
+		console.log(util.inspect(reply, {showHidden: false, depth: null}));
+		client.send_close().thenDefault()
 	})
-})
-
-client.on('rpc-reply', function(reply)
-{
-})
-
-client.on('error', function(error)
-{
-})
-
-client.on('end', function(error)
-{
 })

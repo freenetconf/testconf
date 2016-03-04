@@ -14,59 +14,27 @@
  */
 
 var netconf_client = require('../../../netconf_client')
+var util = require('util')
 
-var client = netconf_client.create(function(error)
+var xml = "<edit-config xmlns:nc='urn:ietf:params:xml:ns:netconf:base:1.0'>" +
+		"<target><running/></target>" +
+		"<config>" +
+			"<vehicle xmlns='urn:ietf:params:xml:ns:yang:vehicle'>" +
+				"<name>Mazda</name>" +
+				"<rims>O.Z. Racing</rims>" +
+				"<color>Red</color>" +
+				"<abs>true</abs>" +
+				"<ac>Wind</ac>"
+			"</vehicle>" +
+		"</config>" +
+	"</edit-config>"
+
+netconf_client.create().then(function(client)
 {
-	if (error)
+	client.send(xml).thenDefault(function(reply)
 	{
-		console.error(error)
-		process.exit(1)
-	}
-
-	var xml = "<edit-config xmlns:nc='urn:ietf:params:xml:ns:netconf:base:1.0'>" +
-			"<target><running/></target>" +
-			"<config>" +
-				"<vehicle xmlns='urn:ietf:params:xml:ns:yang:vehicle'>" +
-				  "<name>Mazda</name>" +
-				  "<rims>O.Z. Racing</rims>" +
-				  "<color>Red</color>" +
-				  "<abs>true</abs>" +
-				  "<ac>Wind</ac>"
-				"</vehicle>" +
-			"</config>" +
-		"</edit-config>"
-
-	client.send(xml, function(error, reply)
-	{
-		if (error)
-		{
-			console.error(error)
-			process.exit(1)
-		}
-
-		client.send_close(function(error, reply)
-		{
-			if (error)
-			{
-				console.error(error)
-				process.exit(1)
-			}
-			else
-			{
-				process.exit(0)
-			}
-		})
+		console.log(reply)
+		console.log(util.inspect(reply, {showHidden: false, depth: null}));
+		client.send_close().thenDefault()
 	})
-})
-
-client.on('rpc-reply', function(reply)
-{
-})
-
-client.on('error', function(error)
-{
-})
-
-client.on('end', function(error)
-{
 })
