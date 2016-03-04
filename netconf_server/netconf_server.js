@@ -78,6 +78,134 @@ var server = function(options, callback)
 
 	var capabilities = netconf.capabilities_from_yang(config.yang_dir, self.log_file)
 
+	processRequest = function (connection, stream, callback)
+	{
+		return function(request)
+		{
+			debug.write('<<<< msg netconf <<<<', false, self.log_file)
+			debug.write(request, false, self.log_file)
+			debug.write('---- msg netconf ----', false, self.log_file)
+
+			xml2js.parseString(request, function(error, data)
+			{
+				if (error)
+				{
+					debug.write('.... xml parsing failed', true, self.log_file)
+					debug.write(error, false, self.log_file)
+
+					return self.emit('error', error)
+				}
+
+				if (data["hello"])
+				{
+					if (connection.netconf_ready)
+					{
+						debug.write('..... hello received at the wrong stage', true, self.log_file)
+						return self.emit('error', 'hello received at the wrong stage')
+					}
+
+					debug.write('..... hello', true, self.log_file)
+					connection.netconf_ready = 1
+
+					var capabilities = data["hello"]["capabilities"][0].capability;
+
+					for (var i in capabilities)
+					{
+						debug.write('...... capability - ' + capabilities[i], true, self.log_file)
+
+						if (capabilities[i] == 'urn:ietf:params:netconf:base:1.1')
+						{
+							connection.netconf_base = 1
+						}
+					}
+
+					return callback(null, self.rpc_methods)
+				}
+
+				if (data["rpc"])
+				{
+
+					var rpc_reply = {}
+					var xml_message = ''
+
+					// handle core modules
+					for (var method in self.rpc_methods)
+					{
+						if (method in data["rpc"])
+						{
+							self.rpc_methods[method](data["rpc"][method][0], rpc_method_call)
+							return
+						}
+					}
+
+					// handle generated modules
+					var files = fs.readdirSync(config.server_methods_dir)
+					for (var f in files)
+					{
+						var file = files[f]
+
+						// TODO: delete cache when needed
+						delete require.cache[__dirname + "/methods/" + file]
+						var methods = require(config.server_methods_dir + file)
+						for (var method in methods)
+						{
+							if (method in data["rpc"])
+							{
+								methods[method](data["rpc"][method][0], rpc_method_call)
+								return
+							}
+						}
+					}
+
+					function rpc_method_call(resp)
+					{
+
+						if (!resp)
+						{
+							resp = netconf.rpc_error("method failed", "operation-not-supported")
+						}
+
+						// raw xml message
+						if (typeof resp === 'string')
+						{
+							xml2js.parseString(resp, function(error, data)
+							{
+								rpc_method_send(error ? {"rpc-error" : error} : data)
+							})
+						}
+
+						// javascript object message
+						else
+						{
+							rpc_method_send(resp)
+						}
+					}
+
+					function rpc_method_send(resp)
+					{
+						rpc_reply = {"rpc-reply": resp}
+						rpc_reply["rpc-reply"].$ = data.rpc.$
+
+						xml_message = builder.buildObject(rpc_reply)
+						if (connection.netconf_base == 1)
+							xml_message = netconf.create_framing_chunk(xml_message.length) + xml_message
+
+						xml_message += netconf.ending[connection.netconf_base]
+
+						self.emit('rpc', data['rpc'])
+
+						debug.write('..... sending rpc', true, self.log_file)
+
+						stream.write(xml_message)
+
+						debug.write('>>>> msg netconf >>>>', false, self.log_file)
+						debug.write(xml_message, false, self.log_file)
+						debug.write('---- msg netconf ----', false, self.log_file)
+					}
+				}
+			})
+		}
+	}
 	console.log('.. starting ssh server')
 	var pubKey = utils.genPublicKey(utils.parseKey(fs.readFileSync(config.keys_dir + 'ssh_host_rsa_key.pub')))
 	var ssh = new ssh2.Server
@@ -198,133 +326,7 @@ var server = function(options, callback)
 						connection.buffer += data;
 
 						debug.write('.... processing incoming request', true, self.log_file)
-						netconf.process_message(connection, process_request)
-
-						function process_request(request)
-						{
-							debug.write('<<<< msg netconf <<<<', false, self.log_file)
-							debug.write(request, false, self.log_file)
-							debug.write('---- msg netconf ----', false, self.log_file)
-
-							xml2js.parseString(request, function(error, data)
-							{
-								if (error)
-								{
-									debug.write('.... xml parsing failed', true, self.log_file)
-									debug.write(error, false, self.log_file)
-
-									return self.emit('error', error)
-								}
-
-								if (data["hello"])
-								{
-									if (connection.netconf_ready)
-									{
-										debug.write('..... hello received at the wrong stage', true, self.log_file)
-										return self.emit('error', 'hello received at the wrong stage')
-									}
-
-									debug.write('..... hello', true, self.log_file)
-									connection.netconf_ready = 1
-
-									var capabilities = data["hello"]["capabilities"][0].capability;
-
-									for (var i in capabilities)
-									{
-										debug.write('...... capability - ' + capabilities[i], true, self.log_file)
-
-										if (capabilities[i] == 'urn:ietf:params:netconf:base:1.1')
-										{
-											connection.netconf_base = 1
-										}
-									}
-
-									return callback(null, self.rpc_methods)
-								}
-
-								if (data["rpc"])
-								{
-
-									var rpc_reply = {}
-									var xml_message = ''
-
-									// handle core modules
-									for (var method in self.rpc_methods)
-									{
-										if (method in data["rpc"])
-										{
-											self.rpc_methods[method](data["rpc"][method][0], rpc_method_call)
-											return
-										}
-									}
-
-									// handle generated modules
-									var files = fs.readdirSync(config.server_methods_dir)
-									for (var f in files)
-									{
-										var file = files[f]
-
-										// TODO: delete cache when needed
-										delete require.cache[__dirname + "/methods/" + file]
-										var methods = require(config.server_methods_dir + file)
-										for (var method in methods)
-										{
-											if (method in data["rpc"])
-											{
-												methods[method](data["rpc"][method][0], rpc_method_call)
-												return
-											}
-										}
-									}
-
-									function rpc_method_call(resp)
-									{
-
-										if (!resp)
-										{
-											resp = netconf.rpc_error("method failed", "operation-not-supported")
-										}
-
-										// raw xml message
-										if (typeof resp === 'string')
-										{
-											xml2js.parseString(resp, function(error, data)
-											{
-												rpc_method_send(error ? {"rpc-error" : error} : data)
-											})
-										}
-
-										// javascript object message
-										else
-										{
-											rpc_method_send(resp)
-										}
-									}
-
-									function rpc_method_send(resp)
-									{
-										rpc_reply = {"rpc-reply": resp}
-										rpc_reply["rpc-reply"].$ = data.rpc.$
-
-										xml_message = builder.buildObject(rpc_reply)
-										if (connection.netconf_base == 1)
-											xml_message = netconf.create_framing_chunk(xml_message.length) + xml_message
-
-										xml_message += netconf.ending[connection.netconf_base]
-
-										self.emit('rpc', data['rpc'])
-
-										debug.write('..... sending rpc', true, self.log_file)
-
-										stream.write(xml_message)
-
-										debug.write('>>>> msg netconf >>>>', false, self.log_file)
-										debug.write(xml_message, false, self.log_file)
-										debug.write('---- msg netconf ----', false, self.log_file)
-									}
-								}
-							})
-						}
+						netconf.process_message(connection, processRequest(connection, stream, callback))
 					})
 				})
 			})
