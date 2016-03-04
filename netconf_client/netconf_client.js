@@ -57,7 +57,7 @@ var client = function(options)
 		var err_msg = "unable to create log file: '" + self.log_name + "'"
 		console.error(err_msg)
 
-		return callback(err_msg)
+		return Promise.reject(err_msg)
 	}
 
 	debug.write('. executing test named "' + this.name + '"', true, self.log_file)
@@ -147,7 +147,7 @@ var client = function(options)
 				debug.write('.... xml parsing failed', true, self.log_file)
 				debug.write(error, false, self.log_file)
 
-				return self.emit('error', error)
+				return reject(error)
 			})
 		}
 	}
