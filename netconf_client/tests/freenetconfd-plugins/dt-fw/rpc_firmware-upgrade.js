@@ -14,7 +14,7 @@
 
 var netconf_client = require('../../../netconf_client')
 var util = require('util');
-	
+
 var address = "address"
 var password = "password"
 var xml =	'<firmware-download   xmlns="urn:ietf:params:xml:ns:yang:ietf-system-openwrt" >' +

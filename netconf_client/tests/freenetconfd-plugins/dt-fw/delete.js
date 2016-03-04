@@ -27,7 +27,7 @@ var xml_test1 = "<edit-config xmlns:nc='urn:ietf:params:xml:ns:netconf:base:1.0'
 		"</config>" +
 	'</edit-config>'
 
-	
+
 // delete uci config section with name test_2
 var xml_test2 = "<edit-config xmlns:nc='urn:ietf:params:xml:ns:netconf:base:1.0'>" +
 	"<target><running/></target>" +

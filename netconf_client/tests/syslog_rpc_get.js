@@ -15,7 +15,7 @@
 
 var netconf_client = require('../netconf_client')
 var util = require('util');
-	
+
 var xml = "<get>" +
 		"<filter>" +
 			"<syslog xmlns='urn:ietf:params:xml:ns:yang:ietf-syslog'>" +
