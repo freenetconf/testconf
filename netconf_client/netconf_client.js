@@ -15,13 +15,12 @@
 
 var fs = require('fs');
 var ssh2 = require('ssh2')
-var xml2js = require('xml2js')
-var builder = new xml2js.Builder();
 var events = require("events")
 var util = require('util')
 var path = require('path')
 var Promise = require('promise')
 
+var xml2js = require('../core/xml2js-promise')
 var netconf = require('../core/netconf')
 var debug = require('../core/debug')
 var config = require('../core/config')
@@ -91,6 +90,68 @@ var client = function(options)
 		ssh_opts.password = self.pass
 	}
 
+	var processRequest = function(resolve, reject)
+	{
+		return function (request)
+		{
+			debug.write('<<<< msg netconf <<<<', false, self.log_file)
+			debug.write(request, false, self.log_file)
+			debug.write('---- msg netconf ----', false, self.log_file)
+
+			xml2js.parseString(request).then(function(data)
+			{
+				if (data["hello"])
+				{
+					if (netconf_ready)
+					{
+						debug.write('..... hello received at the wrong stage', true, self.log_file)
+						return reject('hello received at the wrong stage')
+					}
+
+					debug.write('..... hello', true, self.log_file)
+					netconf_ready = 1
+
+					var capabilities = data["hello"]["capabilities"][0].capability;
+
+					for (var i in capabilities)
+					{
+						debug.write('...... capability - ' + capabilities[i], true, self.log_file)
+
+						if (capabilities[i] == 'urn:ietf:params:netconf:base:1.1')
+						{
+							self.netconf_base = 1;
+						}
+					}
+
+					resolve(self)
+					return
+				}
+
+				if (data["rpc-reply"])
+				{
+					var msg_id = data["rpc-reply"].$["message-id"]
+					if (typeof messages_queue[msg_id] === 'undefined')
+					{
+						debug.write('..... rpc-reply with incorrect message id', true, self.log_file)
+						return reject("rpc-reply with incorrect message id")
+					}
+
+					debug.write('..... rpc-reply', true, self.log_file)
+
+					messages_queue[msg_id](request)
+					delete messages_queue[msg_id]
+				}
+			},
+			function(error)
+			{
+				debug.write('.... xml parsing failed', true, self.log_file)
+				debug.write(error, false, self.log_file)
+
+				return self.emit('error', error)
+			})
+		}
+	}
+
 
 	var startSshClientSession = function(ssh_opts)
 	{
@@ -107,9 +168,7 @@ var client = function(options)
 					if (error)
 					{
 						ssh.end()
-						reject && reject(error)
-
-						return
+						return reject && reject(error)
 					}
 
 					con = stream
@@ -130,15 +189,13 @@ var client = function(options)
 					{
 						debug.write('.. ssh stream close', true, self.log_file)
 						ssh.end()
-						reject && reject(error)
-						//self.emit('error', error)
+						return reject && reject(error)
 					})
 
 					stream.on('close', function()
 					{
 						debug.write('.. ssh stream close', true, self.log_file)
 						ssh.end();
-						//self.emit('end')
 					});
 
 					stream.on('data', function(data, extended)
@@ -151,67 +208,7 @@ var client = function(options)
 						self.buffer += data.toString();
 
 						debug.write('.... processing incoming request', true, self.log_file)
-						netconf.process_message(self, process_request)
-
-						function process_request(request)
-						{
-							debug.write('<<<< msg netconf <<<<', false, self.log_file)
-							debug.write(request, false, self.log_file)
-							debug.write('---- msg netconf ----', false, self.log_file)
-
-							xml2js.parseString(request, function(error, data)
-							{
-								if (error)
-								{
-									debug.write('.... xml parsing failed', true, self.log_file)
-									debug.write(error, false, self.log_file)
-
-									return self.emit('error', error)
-								}
-
-								if (data["hello"])
-								{
-									if (netconf_ready)
-									{
-										debug.write('..... hello received at the wrong stage', true, self.log_file)
-										return self.emit('error', 'hello received at the wrong stage')
-									}
-
-									debug.write('..... hello', true, self.log_file)
-									netconf_ready = 1
-
-									var capabilities = data["hello"]["capabilities"][0].capability;
-
-									for (var i in capabilities)
-									{
-										debug.write('...... capability - ' + capabilities[i], true, self.log_file)
-
-										if (capabilities[i] == 'urn:ietf:params:netconf:base:1.1')
-										{
-											self.netconf_base = 1;
-										}
-									}
-
-									resolve(self)
-									return
-								}
-
-								if (data["rpc-reply"])
-								{
-									var msg_id = data["rpc-reply"].$["message-id"]
-									if (typeof messages_queue[msg_id] === 'undefined')
-									{
-										debug.write('..... rpc-reply with incorrect message id', true, self.log_file)
-										return self.emit('error', "rpc-reply with incorrect message id")
-									}
-
-									debug.write('..... rpc-reply', true, self.log_file)
-
-									messages_queue[msg_id](request)
-									delete messages_queue[msg_id]
-								}
-							})
-						}
+						netconf.process_message(self, processRequest(resolve, reject))
 					})
 				})
 			})
@@ -220,15 +217,13 @@ var client = function(options)
 			{
 				if (!netconf_ready)
 				{
-					reject && reject(error)
-					return
+					return reject && reject(error)
 				}
 
 				debug.write('.. ssh connection closed due to error', true, self.log_file)
 				debug.write(error, false, self.log_file)
 				fs.closeSync(self.log_file);
-				self.emit('error', error)
-				reject && reject(error)
+				return reject && reject(error)
 			})
 
 			ssh.on('close', function(had_error)
