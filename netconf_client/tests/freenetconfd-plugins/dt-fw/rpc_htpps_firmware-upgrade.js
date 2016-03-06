@@ -19,14 +19,14 @@ var address = "address"
 var cert ="-----BEGIN CERTIFICATE-----\n" +
 		"-----END CERTIFICATE-----\n"
 
-var xml =	'<firmware-download   xmlns="urn:ietf:params:xml:ns:yang:ietf-system-openwrt" >' +
+var xml = '<firmware-download xmlns="urn:ietf:params:xml:ns:yang:ietf-system-openwrt">' +
 		'<address>' + address + '</address>' +
 		'<install-target>test_1</install-target>' +
-		'<timeframe                >0</timeframe>' +
-		'<retry-count              >3</retry-count>' +
-		'<retry-interval           >5</retry-interval>' +
-		'<retry-interval-increment >20</retry-interval-increment>' +
-		'<certificate              >' + cert + '</certificate>' +
+		'<timeframe>0</timeframe>' +
+		'<retry-count>3</retry-count>' +
+		'<retry-interval>5</retry-interval>' +
+		'<retry-interval-increment>20</retry-interval-increment>' +
+		'<certificate>' + cert + '</certificate>' +
 	'</firmware-download>'
 
 netconf_client.create().then(function(client)

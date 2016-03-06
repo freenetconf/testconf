@@ -19,10 +19,10 @@ var xmls = []
 var xml_1000 = "<edit-config xmlns:nc='urn:ietf:params:xml:ns:netconf:base:1.0'>" +
 		"<target><running/></target>" +
 		"<config>" +
-			"<extension  xmlns='urn:ietf:params:xml:ns:yang:sip'>" +
+			"<extension xmlns='urn:ietf:params:xml:ns:yang:sip'>" +
 				"<ext>" +
-					"<name    >1000</name>" +
-					"<context >new_ctx</context>" +
+					"<name>1000</name>" +
+					"<context>new_ctx</context>" +
 				"</ext>" +
 			"</extension>" +
 		"</config>" +
@@ -48,8 +48,8 @@ var xml_general = "<edit-config xmlns:nc='urn:ietf:params:xml:ns:netconf:base:1.
 		"<target><running/></target>" +
 		"<config>" +
 			"<general xmlns='urn:ietf:params:xml:ns:yang:sip'>" +
-				"<disabled >1</disabled>" +
-				"<amihost  >127.0.0.2</amihost>" +
+				"<disabled>1</disabled>" +
+				"<amihost>127.0.0.2</amihost>" +
 			"</general>" +
 		"</config>" +
 	"</edit-config>"
@@ -59,7 +59,7 @@ var xml_trunk = "<edit-config xmlns:nc='urn:ietf:params:xml:ns:netconf:base:1.0'
 		"<target><running/></target>" +
 		"<config>" +
 			"<trunk xmlns='urn:ietf:params:xml:ns:yang:sip'>" +
-				"<password >new_pass</password>" +
+				"<password>new_pass</password>" +
 			"</trunk>" +
 		"</config>" +
 	"</edit-config>"

@@ -20,11 +20,11 @@ var xml_1000 = "<edit-config xmlns:nc='urn:ietf:params:xml:ns:netconf:base:1.0'>
 		"<target><running/></target>" +
 		"<config>" +
 			"<extension xmlns='urn:ietf:params:xml:ns:yang:sip'>" +
-				"<ext  nc:operation='create'  >" +
-					"<name     >1000</name>" +
-					"<type     >generic</type>" +
-					"<context  >ctx</context>" +
-					"<target   >phone</target>" +
+				"<ext nc:operation='create'>" +
+					"<name>1000</name>" +
+					"<type>generic</type>" +
+					"<context>ctx</context>" +
+					"<target>phone</target>" +
 				"</ext>" +
 			"</extension>" +
 		"</config>" +
@@ -34,17 +34,17 @@ var xml_1000 = "<edit-config xmlns:nc='urn:ietf:params:xml:ns:netconf:base:1.0'>
 var xml_1234 = "<edit-config xmlns:nc='urn:ietf:params:xml:ns:netconf:base:1.0'>" +
 		"<target><running/></target>" +
 		"<config>" +
-			"<extension  xmlns='urn:ietf:params:xml:ns:yang:sip'>" +
-				"<ext  nc:operation='create'>" +
-					"<name          >1234</name>" +
-					"<type          >external</type>" +
-					"<international >1</international>" +
-					"<rings >" +
-						"<ring  >10</ring>" +
-						"<ring  >11</ring>" +
-						"<ring  >12</ring>" +
+			"<extension xmlns='urn:ietf:params:xml:ns:yang:sip'>" +
+				"<ext nc:operation='create'>" +
+					"<name>1234</name>" +
+					"<type>external</type>" +
+					"<international>1</international>" +
+					"<rings>" +
+						"<ring>10</ring>" +
+						"<ring>11</ring>" +
+						"<ring>12</ring>" +
 					"</rings>" +
-					"<trunk         >terastream</trunk>" +
+					"<trunk>terastream</trunk>" +
 				"</ext>" +
 			"</extension>" +
 		"</config>" +
@@ -55,13 +55,13 @@ var xml_general = "<edit-config xmlns:nc='urn:ietf:params:xml:ns:netconf:base:1.
 		"<target><running/></target>" +
 		"<config>" +
 			"<general nc:operation='create' xmlns='urn:ietf:params:xml:ns:yang:sip'>" +
-				"<name     >general</name>" +
-				"<disabled >0</disabled>" +
-				"<ami      >1</ami>" +
-				"<amihost  >127.0.0.1</amihost>" +
-				"<amiport  >100</amiport>" +
-				"<amiuser  >user</amiunec>" +
-				"<amipass  >pass</amipass>" +
+				"<name>general</name>" +
+				"<disabled>0</disabled>" +
+				"<ami>1</ami>" +
+				"<amihost>127.0.0.1</amihost>" +
+				"<amiport>100</amiport>" +
+				"<amiuser>user</amiunec>" +
+				"<amipass>pass</amipass>" +
 			"</general>" +
 		"</config>" +
 	"</edit-config>"
@@ -70,14 +70,14 @@ var xml_general = "<edit-config xmlns:nc='urn:ietf:params:xml:ns:netconf:base:1.
 var xml_trunk = "<edit-config xmlns:nc='urn:ietf:params:xml:ns:netconf:base:1.0'>" +
 		"<target><running/></target>" +
 		"<config>" +
-			"<trunk  nc:operation='create' xmlns='urn:ietf:params:xml:ns:yang:sip'>" +
-				"<name     >terastream</name>" +
-				"<type     >terastream</type>" +
-				"<server   >dot.org</server>" +
-				"<username >1234</username>" +
-				"<nr       >1234</nr>" +
-				"<password >pass</password>" +
-				"<codecs   >mp3</codecs>" +
+			"<trunk nc:operation='create' xmlns='urn:ietf:params:xml:ns:yang:sip'>" +
+				"<name>terastream</name>" +
+				"<type>terastream</type>" +
+				"<server>dot.org</server>" +
+				"<username>1234</username>" +
+				"<nr>1234</nr>" +
+				"<password>pass</password>" +
+				"<codecs>mp3</codecs>" +
 			"</trunk>" +
 		"</config>" +
 	"</edit-config>"

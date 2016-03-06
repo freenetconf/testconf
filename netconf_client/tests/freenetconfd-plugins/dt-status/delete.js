@@ -18,9 +18,9 @@ var util = require('util');
 var xml = "<edit-config xmlns:nc='urn:ietf:params:xml:ns:netconf:base:1.0'>" +
 		"<target><running/></target>" +
 		"<config>" +
-			"<status xmlns='urn:ietf:params:xml:ns:yang:status' >" +
+			"<status xmlns='urn:ietf:params:xml:ns:yang:status'>" +
 				"<wifi>" +
-					"<wifi-iface nc:operation='delete' >" +
+					"<wifi-iface nc:operation='delete'>" +
 						"<name>wifi1</name>" +
 					"</wifi-iface>" +
 				"</wifi>" +
@@ -32,9 +32,9 @@ var xml = "<edit-config xmlns:nc='urn:ietf:params:xml:ns:netconf:base:1.0'>" +
 var xml2 = "<edit-config xmlns:nc='urn:ietf:params:xml:ns:netconf:base:1.0'>" +
 		"<target><running/></target>" +
 		"<config>" +
-			"<status xmlns='urn:ietf:params:xml:ns:yang:status' >" +
+			"<status xmlns='urn:ietf:params:xml:ns:yang:status'>" +
 				"<wifi>" +
-					"<wifi-device nc:operation='delete' >" +
+					"<wifi-device nc:operation='delete'>" +
 						"<name>wifi1</name>" +
 					"</wifi-device>" +
 				"</wifi>" +

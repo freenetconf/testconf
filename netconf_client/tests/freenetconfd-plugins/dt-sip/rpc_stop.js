@@ -16,7 +16,7 @@ var netconf_client = require('../../../netconf_client')
 var util = require('util');
 
 // stop asterisk
-var xml = '<stop  xmlns="urn:ietf:params:xml:ns:yang:sip"></stop>'
+var xml = '<stop xmlns="urn:ietf:params:xml:ns:yang:sip"></stop>'
 
 netconf_client.create().then(function(client)
 {
