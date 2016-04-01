@@ -17,6 +17,7 @@ require('es6-shim')
 var fs = require('fs');
 var debug = require('../core/debug')
 var config = require('../core/config')
+var fork = require('child_process').fork;
 
 var commands = ['run', 'help'];
 
@@ -86,7 +87,7 @@ rl.on('line', function (line)
 		}
 		else {
 			console.log("Running: " + params);
-			require('./tests/' + params)
+			var child = fork(__dirname + '/tests/' + params);
 		}
 	}
 	else if (line.startsWith('help')) {
