@@ -86,7 +86,7 @@ var netconf_rpc_header = exports.rpc_header = function(base, message_id)
 	base = base || 0
 	message_id = message_id || 1
 
-	return '<rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.' + base + '" message-id="'+ message_id + '">'
+	return '<rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0' + '" message-id="'+ message_id + '">'
 }
 
 var netconf_rpc_reply_header = exports.rpc_reply_header = function(base, message_id)
@@ -94,7 +94,7 @@ var netconf_rpc_reply_header = exports.rpc_reply_header = function(base, message
 	base = base || 0
 	message_id = message_id || 1
 
-	return '<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.'+ base + '" message-id="'+ message_id + '">'
+	return '<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0' + '" message-id="'+ message_id + '">'
 }
 
 exports.get_schema = function(schema)
@@ -154,7 +154,7 @@ exports.create_rpc_message = function(message, base, message_id)
 
 	var r_message = netconf_rpc_header(base, message_id) + message + netconf_rpc_end + netconf_ending[base]
 
-	return (base == 1 ? create_framing_chunk(message.length) + r_message : r_message)
+	return (base == 1 ? create_framing_chunk(r_message.length - netconf_ending[base].length) + r_message : r_message)
 }
 
 exports.create_rpc_reply_message = function(message, base, message_id)
@@ -166,7 +166,7 @@ exports.create_rpc_reply_message = function(message, base, message_id)
 
 	var r_message = netconf_rpc_reply_header(base, message_id) + message + netconf_rpc_reply_end + netconf_ending[base]
 
-	return (base == 1 ? create_framing_chunk(message.length) + r_message : r_message)
+	return (base == 1 ? create_framing_chunk(r_message.length - netconf_ending[base].length) + r_message : r_message)
 }
 
 exports.capabilities_from_yang = function(yang_dir, to_file)

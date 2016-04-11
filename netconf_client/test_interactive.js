@@ -17,6 +17,7 @@ require('es6-shim')
 var fs = require('fs');
 var debug = require('../core/debug')
 var config = require('../core/config')
+var spawn = require('child_process').spawn
 
 var commands = ['run', 'help'];
 
@@ -86,7 +87,27 @@ rl.on('line', function (line)
 		}
 		else {
 			console.log("Running: " + params);
-			require('./tests/' + params)
+			var child = spawn('node', ['./tests/' + params]);
+
+			child.stdout.on('data', function(data)
+			{
+				process.stdout.write(params + ': ' + data)
+			})
+
+			child.stderr.on('data', function(data)
+			{
+				process.stderr.write(params + ': ' + data)
+			})
+				//require('./tests/' + params)
+				//
+			child.on('close', function(code)
+			{
+				console.log('')
+				console.log('`' + params + '` exited with code ' + code)
+				rl.prompt()
+			})
+
+			return
 		}
 	}
 	else if (line.startsWith('help')) {
