@@ -87,7 +87,7 @@ rl.on('line', function (line)
 		}
 		else {
 			console.log("Running: " + params);
-			var child = spawn('node', ['./tests/' + params]);
+			var child = spawn('node', [__dirname + '/tests/' + params]);
 
 			child.stdout.on('data', function(data)
 			{
