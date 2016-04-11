@@ -15,7 +15,7 @@
 var netconf_client = require('../../../netconf_client')
 var util = require('util');
 
-var xml =	'<set-current-datetime xmlns="urn:ietf:params:xml:ns:yang:ietf-system-openwrt" >' +
+var xml = '<set-current-datetime xmlns="urn:ietf:params:xml:ns:yang:ietf-system-openwrt">' +
 		'<current-datetime>"2014-12-25 12:34:56"</current-datetime>' +
 	'</set-current-datetime>'
 

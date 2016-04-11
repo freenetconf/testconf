@@ -15,7 +15,7 @@
 var netconf_client = require('../../../netconf_client')
 var util = require('util');
 
-var xml =	'<system-shutdown xmlns="urn:ietf:params:xml:ns:yang:ietf-system-openwrt" >' +
+var xml = '<system-shutdown xmlns="urn:ietf:params:xml:ns:yang:ietf-system-openwrt">' +
 	'</system-shutdown>'
 
 netconf_client.create().then(function(client)

@@ -20,7 +20,7 @@ var xml_1000 = "<edit-config xmlns:nc='urn:ietf:params:xml:ns:netconf:base:1.0'>
 		"<target><running/></target>" +
 		"<config>" +
 			"<extension xmlns='urn:ietf:params:xml:ns:yang:sip'>" +
-				"<ext  nc:operation='delete'>" +
+				"<ext nc:operation='delete'>" +
 					"<name>1000</name>" +
 			"</extension>" +
 		"</config>" +

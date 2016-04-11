@@ -17,14 +17,14 @@ var util = require('util');
 
 var address = "address"
 var password = "password"
-var xml =	'<firmware-download   xmlns="urn:ietf:params:xml:ns:yang:ietf-system-openwrt" >' +
+var xml = '<firmware-download xmlns="urn:ietf:params:xml:ns:yang:ietf-system-openwrt">' +
 		'<address>' + address + '</address>' +
 		'<install-target>test_1</install-target>' +
-		'<timeframe                >0</timeframe>' +
-		'<retry-count              >3</retry-count>' +
-		'<retry-interval           >5</retry-interval>' +
-		'<retry-interval-increment >20</retry-interval-increment>' +
-		'<password                 >' + password + '</password>' +
+		'<timeframe>0</timeframe>' +
+		'<retry-count>3</retry-count>' +
+		'<retry-interval>5</retry-interval>' +
+		'<retry-interval-increment>20</retry-interval-increment>' +
+		'<password>' + password + '</password>' +
 	'</firmware-download>'
 
 netconf_client.create().then(function(client)

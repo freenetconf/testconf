@@ -21,10 +21,10 @@ var xml_test1 = "<edit-config xmlns:nc='urn:ietf:params:xml:ns:netconf:base:1.0'
 		"<config>" +
 			'<system-state xmlns="urn:ietf:params:xml:ns:yang:ietf-system-openwrt">' +
 				'<firmware-slot>' +
-					"<name    >test_1</name>" +
-					"<version >1</version>" +
-					"<active  >true</active>" +
-					"<path    >/tmp</path>" +
+					"<name>test_1</name>" +
+					"<version>1</version>" +
+					"<active>true</active>" +
+					"<path>/tmp</path>" +
 				'</firmware-slot>' +
 			'</system-state>' +
 		"</config>" +
@@ -35,11 +35,11 @@ var xml_test2 = "<edit-config xmlns:nc='urn:ietf:params:xml:ns:netconf:base:1.0'
 	"<target><running/></target>" +
 		"<config>" +
 			'<system-state xmlns="urn:ietf:params:xml:ns:yang:ietf-system-openwrt">' +
-				'<firmware-slot  nc:operation="create" >' +
-					"<name    >test_2</name>" +
-					"<version >3</version>" +
-					"<active  >true</active>" +
-					"<path    >/tmp</path>" +
+				'<firmware-slot nc:operation="create">' +
+					"<name>test_2</name>" +
+					"<version>3</version>" +
+					"<active>true</active>" +
+					"<path>/tmp</path>" +
 				'</firmware-slot>' +
 			'</system-state>' +
 		"</config>" +
