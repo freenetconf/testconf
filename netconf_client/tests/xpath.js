@@ -18,11 +18,18 @@ var util = require('util')
 var libxmljs = require("libxmljs");
 var pd = require('pretty-data').pd;
 
+var yang_import_path = "../../ietf-yangs"
+var yang_module_name
+
 var orig_xpath
 
 process.argv.forEach(function (val, index, array) {
 	if (index == 2)
 		orig_xpath = process.argv[index]
+	else if (index == 3)
+		yang_module_name = process.argv[index]
+	else if (index == 4)
+		yang_import_path = process.argv[index]
 });
 
 if (orig_xpath == undefined) {
@@ -40,6 +47,25 @@ xpath = '/' + xpath
 
 var xml = '<get-config><source><running/></source><filter><' + name + '/></filter></get-config>'
 
+function validate(xml) {
+	var error;
+	var yang = require("libyang")
+	yang.ly_verb(yang.LY_LLWRN);
+
+	var ctx = yang.ly_ctx_new(yang_import_path);
+	yang_module_name = "../../ietf-yangs/example-module@2016-05-09.yang"
+	yang_import_path = "../../ietf-yangs"
+	var module = yang.lys_parse_path(ctx, yang_module_name, yang.LYS_IN_YANG);
+	error =  yang.ly_errmsg();
+	console.log(error)
+
+	yang.ly_ctx_destroy(ctx)
+}
+
+if (yang_module_name != undefined && yang_import_path != undefined ) {
+	validate(xml)
+}
+
 netconf_client.create().then(function(client)
 {
 	client.send(xml).thenDefault(function(reply)
@@ -56,5 +82,9 @@ netconf_client.create().then(function(client)
 
                 xml_pp = pd.xml(gchild.childNodes().toString());
                 console.log("\n" + xml_pp + "\n");
+
+		if (yang_module_name != undefined && yang_import_path != undefined ) {
+			validate(xml)
+		}
 	})
 })
