@@ -60,7 +60,7 @@ var client = function(options)
 		return Promise.reject(err_msg)
 	}
 
-	debug.write('. executing test named "' + this.name + '"', true, self.log_file)
+	debug.write('. executing test named "' + this.name + '"', config.show_logs, self.log_file)
 
 	try
 	{
@@ -68,7 +68,7 @@ var client = function(options)
 	}
 	catch(e)
 	{
-		debug.write(e, true, self.log_file)
+		debug.write(e, config.show_logs, self.log_file)
 	}
 
 	var ssh = new ssh2();
@@ -104,18 +104,18 @@ var client = function(options)
 				{
 					if (netconf_ready)
 					{
-						debug.write('..... hello received at the wrong stage', true, self.log_file)
+						debug.write('..... hello received at the wrong stage', config.show_logs, self.log_file)
 						return reject('hello received at the wrong stage')
 					}
 
-					debug.write('..... hello', true, self.log_file)
+					debug.write('..... hello', config.show_logs, self.log_file)
 					netconf_ready = 1
 
 					var capabilities = data["hello"]["capabilities"][0].capability;
 
 					for (var i in capabilities)
 					{
-						debug.write('...... capability - ' + capabilities[i], true, self.log_file)
+						debug.write('...... capability - ' + capabilities[i], config.show_logs, self.log_file)
 
 						if (capabilities[i] == 'urn:ietf:params:netconf:base:1.1')
 						{
@@ -132,11 +132,11 @@ var client = function(options)
 					var msg_id = data["rpc-reply"].$["message-id"]
 					if (typeof messages_queue[msg_id] === 'undefined')
 					{
-						debug.write('..... rpc-reply with incorrect message id', true, self.log_file)
+						debug.write('..... rpc-reply with incorrect message id', config.show_logs, self.log_file)
 						return reject("rpc-reply with incorrect message id")
 					}
 
-					debug.write('..... rpc-reply', true, self.log_file)
+					debug.write('..... rpc-reply', config.show_logs, self.log_file)
 
 					messages_queue[msg_id](request)
 					delete messages_queue[msg_id]
@@ -144,7 +144,7 @@ var client = function(options)
 			},
 			function(error)
 			{
-				debug.write('.... xml parsing failed', true, self.log_file)
+				debug.write('.... xml parsing failed', config.show_logs, self.log_file)
 				debug.write(error, false, self.log_file)
 
 				return reject(error)
@@ -161,7 +161,7 @@ var client = function(options)
 
 			ssh.on('ready', function()
 			{
-				debug.write('.. ssh connection ready', true, self.log_file)
+				debug.write('.. ssh connection ready', config.show_logs, self.log_file)
 
 				ssh.subsys('netconf', function(error, stream)
 				{
@@ -173,11 +173,11 @@ var client = function(options)
 
 					con = stream
 
-					debug.write('... netconf subsystem acquired', true, self.log_file)
+					debug.write('... netconf subsystem acquired', config.show_logs, self.log_file)
 
 					if (self.send_hello_message)
 					{
-						debug.write('.... sending client hello', true, self.log_file)
+						debug.write('.... sending client hello', config.show_logs, self.log_file)
 						debug.write('>>>> msg netconf hello >>>>', false, self.log_file)
 						debug.write(netconf.hello(self.capabilities), false, self.log_file)
 						debug.write('---- msg netconf hello ----', false, self.log_file)
@@ -187,14 +187,14 @@ var client = function(options)
 
 					stream.on('error', function(error)
 					{
-						debug.write('.. ssh stream close', true, self.log_file)
+						debug.write('.. ssh stream close', config.show_logs, self.log_file)
 						ssh.end()
 						return reject && reject(error)
 					})
 
 					stream.on('close', function()
 					{
-						debug.write('.. ssh stream close', true, self.log_file)
+						debug.write('.. ssh stream close', config.show_logs, self.log_file)
 						ssh.end();
 					});
 
@@ -207,7 +207,7 @@ var client = function(options)
 
 						self.buffer += data.toString();
 
-						debug.write('.... processing incoming request', true, self.log_file)
+						debug.write('.... processing incoming request', config.show_logs, self.log_file)
 						netconf.process_message(self, processRequest(resolve, reject))
 					})
 				})
@@ -220,7 +220,7 @@ var client = function(options)
 					return reject && reject(error)
 				}
 
-				debug.write('.. ssh connection closed due to error', true, self.log_file)
+				debug.write('.. ssh connection closed due to error', config.show_logs, self.log_file)
 				debug.write(error, false, self.log_file)
 				fs.closeSync(self.log_file);
 				return reject && reject(error)
@@ -228,7 +228,7 @@ var client = function(options)
 
 			ssh.on('close', function(had_error)
 			{
-				debug.write('.. ssh connection closed', true, self.log_file)
+				debug.write('.. ssh connection closed', config.show_logs, self.log_file)
 				fs.closeSync(self.log_file);
 			});
 		})
@@ -240,13 +240,13 @@ var client = function(options)
 		{
 			if (!con)
 			{
-				debug.write('... ssh stream has not been established', true, self.log_file)
+				debug.write('... ssh stream has not been established', config.show_logs, self.log_file)
 				reject && reject('ssh stream has not been established')
 			}
 
 			if (!netconf_ready)
 			{
-				debug.write('... netconf not ready, hello message has not been exchanged', true, self.log_file)
+				debug.write('... netconf not ready, hello message has not been exchanged', config.show_logs, self.log_file)
 				reject && reject('netconf not ready, hello message has not been exchanged')
 			}
 
@@ -292,26 +292,26 @@ var client = function(options)
 	// standard netconf rpcs
 	this.send_get = function(filter)
 	{
-		debug.write('.... sending msg (get)', true, self.log_file)
+		debug.write('.... sending msg (get)', config.show_logs, self.log_file)
 		return self.send(netconf.get(filter))
 	}
 
 	this.send_get_config = function(filter)
 	{
-		debug.write('.... sending msg (get-config)', true, self.log_file)
+		debug.write('.... sending msg (get-config)', config.show_logs, self.log_file)
 		return self.send(netconf.get_config(filter))
 	}
 
 	this.send_close = function()
 	{
-		debug.write('.... sending msg (close-session)', true, self.log_file)
+		debug.write('.... sending msg (close-session)', config.show_logs, self.log_file)
 		//setBreakpoint().sb()
 		return self.send(netconf.close())
 	}
 
 	this.send_kill = function(session_id)
 	{
-		debug.write('.... sending msg (kill-session)', true, self.log_file)
+		debug.write('.... sending msg (kill-session)', config.show_logs, self.log_file)
 		return self.send(netconf.kill(session_id))
 	}
 
@@ -321,7 +321,7 @@ var client = function(options)
 			return new Promise.reject('missing mandatory argument "identifier" in schema')
 		}
 
-		debug.write('.... sending msg (get-schema)', true, self.log_file)
+		debug.write('.... sending msg (get-schema)', config.show_logs, self.log_file)
 		return self.send(netconf.get_schema(schema))
 	}
 
