@@ -130,7 +130,7 @@ exports.process_message = function(connection, callback)
 		if (connection.netconf_base == 1)
 		{
 			var framing_chunk = request.match(/[0-9]+/)
-			request = request.replace(/\n.*#[0-9]+\n/, '')
+			request = request.replace(/\n.*#[0-9]+\n/g, '')
 		}
 
 		// callback with message
