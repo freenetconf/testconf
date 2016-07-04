@@ -134,7 +134,7 @@ exports.process_message = function(connection, callback)
 		}
 
 		// callback with message
-		request && callback && callback(request)
+		request && callback && callback(request, true)
 	}
 }
 

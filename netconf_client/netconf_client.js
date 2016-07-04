@@ -92,7 +92,7 @@ var client = function(options)
 
 	var processRequest = function(resolve, reject)
 	{
-		return function (request)
+		return function (request, repeat)
 		{
 			debug.write('<<<< msg netconf <<<<', false, self.log_file)
 			debug.write(request, false, self.log_file)
@@ -145,8 +145,14 @@ var client = function(options)
 			function(error)
 			{
 				debug.write('.... xml parsing failed', config.show_logs, self.log_file)
-				debug.write(error, false, self.log_file)
+				debug.write(error, true, self.log_file)
 
+				//TODO debug this
+				if (repeat) {
+					request = request.replace(/\n/, '\n<![CDATA[\n')
+					request = request.replace(/\n(?=[^\n]*$)/, "\n]]>\n");
+					return processRequest(resolve, request)(request, false)
+				}
 				return reject(error)
 			})
 		}
