@@ -1,41 +1,44 @@
 {
-	"name": "testconf",
-	"description": "NETCONF testing suite",
-	"homepage": "http://www.freenetconf.org/",
-	"version": "0.0.0",
-	"license": "GPL-2.0+",
-	"repository" : {
-		"type" : "git",
-		"url" : "https://github.com/freenetconf/testconf.git"
-	},
-	"bugs" : {
-		"url" : "https://github.com/freenetconf/testconf/issues"
-	},
-	"licenses" : [
-		{
-			"type" : "GPL-2.0+",
-			"url" : "https://github.com/freenetconf/testconf/raw/master/COPYING"
-		}
-	],
-	"dependencies": {
-		"xml2js": "0.4.16",
-		"JSONPath": "0.11.2",
-		"ssh2": "0.4.13",
-		"es6-shim": "0.35.0",
-		"buffer-equal-constant-time": "1.0.1",
-		"promise": "7.1.1",
-		"libyang": "1.0.9",
-		"libxmljs": "0.18.0",
-		"pretty-data": "0.40.0"
-	},
-	"engine": "node >= 0.10.31",
-	"contributors": [
-		{
-			"name": "Petar Koretic",
-			"email": "petar.koretic@sartura.hr"
-		}, {
-			"name": "Luka Perkov",
-			"email": "luka.perkov@sartura.hr"
-		}
-	]
+  "name": "testconf",
+  "description": "NETCONF testing suite",
+  "homepage": "http://www.freenetconf.org/",
+  "version": "0.0.0",
+  "license": "GPL-2.0+",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/freenetconf/testconf.git"
+  },
+  "bugs": {
+    "url": "https://github.com/freenetconf/testconf/issues"
+  },
+  "licenses": [
+    {
+      "type": "GPL-2.0+",
+      "url": "https://github.com/freenetconf/testconf/raw/master/COPYING"
+    }
+  ],
+  "dependencies": {
+    "JSONPath": "0.11.2",
+    "buffer-equal-constant-time": "1.0.1",
+    "child-process-promise": "^2.0.3",
+    "es6-shim": "0.35.0",
+    "libxmljs": "0.18.0",
+    "libyang": "1.0.9",
+    "pretty-data": "0.40.0",
+    "promise": "7.1.1",
+    "ssh2": "0.4.13",
+    "xml2js": "0.4.16",
+    "child-process-promise": "2.0.3"
+  },
+  "engine": "node >= 0.10.31",
+  "contributors": [
+    {
+      "name": "Petar Koretic",
+      "email": "petar.koretic@sartura.hr"
+    },
+    {
+      "name": "Luka Perkov",
+      "email": "luka.perkov@sartura.hr"
+    }
+  ]
 }
