@@ -15,7 +15,31 @@
 
 var netconf_client = require('../netconf_client')
 
-netconf_client.create().then(function(client)
-{
-	client.send_close().thenDefault()
-})
+// netconf_client.create().then(function(client)
+// {
+// 	client.send_close().then()
+// })
+// .catch(function(ex) {
+// 	console.log('exc:')
+// 	console.log(ex)
+// })
+
+netconf_client.create()
+	.close(function() {
+		console.log('ac1')
+	})
+	.run()
+	.then(function(s) {
+		console.log("Success")
+		//console.log(s)
+	}, function(e) {
+		console.log("error")
+		console.log(e)
+	})
+	.catch(function(ex) {
+		console.log('exception')
+		console.log(ex)
+	})
+	.finally(function() {
+		process.exit(0)
+	})
