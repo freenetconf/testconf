@@ -147,7 +147,7 @@ var client = function(options)
 				//TODO debug this
 				if (repeat) {
 					request = request.replace(/\n/, '\n<![CDATA[\n')
-					request = request.replace(/\n(?=[^\n]*$)/, "\n]]>\n");
+					request = request.replace(/\n(?=[^\n]*$)/, "\n]]>");
 					return processRequest(resolve, request)(request, false)
 				}
 
