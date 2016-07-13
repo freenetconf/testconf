@@ -144,15 +144,16 @@ var client = function(options)
 			},
 			function(error)
 			{
-				debug.write('.... xml parsing failed', config.show_logs, self.log_file)
-				debug.write(error, true, self.log_file)
-
 				//TODO debug this
 				if (repeat) {
 					request = request.replace(/\n/, '\n<![CDATA[\n')
 					request = request.replace(/\n(?=[^\n]*$)/, "\n]]>\n");
 					return processRequest(resolve, request)(request, false)
 				}
+
+				debug.write('.... xml parsing failed', config.show_logs, self.log_file)
+				debug.write(error, config.show_logs, self.log_file)
+
 				return reject(error)
 			})
 		}
