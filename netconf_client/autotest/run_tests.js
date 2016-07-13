@@ -111,7 +111,7 @@ var generate_data = function(y) {
 			Math.pow(2,16) + r_int(0, Math.pow(2,16)-1)]})
 	} else if (y.leaf[1].type == 'bool') {
 		y.leaf.push({valid:['true','false']})
-		y.leaf.push({invalid:[r_string(r_int(0,100)), r_string(r_int(0,100)), r_string(r_int(0,100)) ]})
+		y.leaf.push({invalid:[r_string(r_int(1,100)), r_string(r_int(1,100)), r_string(r_int(1,100)) ]})
 	}
 }
 
