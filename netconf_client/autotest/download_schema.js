@@ -34,25 +34,27 @@ function download_schema(folder, xml){
 			client.send(request).thenDefault(function(reply) {
 				client.send_close().then(function (resolve,request) {
 					var file = folder +
-					'/' +
 					xmlDoc.get('/schema/identifier').childNodes().toString() +
 					'@' +
 					xmlDoc.get('/schema/version').childNodes().toString() +
 					'.yang'
 
+					console.log(reply)
 					reply = libxmljs.parseXml(reply);
 					reply = reply.root().childNodes()[0].childNodes().toString()
 
+					console.log(reply)
 					var lines = reply.split('\n')
 					var result = ''
 
 					for (var i = 0; i < lines.length; i++) {
-						if (i != 1 && i != (lines.length - 2)) {
-							console.log(i)
+						// TODO add proper solution for xml parsing
+						if (i != (lines.length - 1) && lines[i] != ",<![CDATA[") {
 							result += lines[i] + '\n'
 						}
 					}
 
+					console.log(result)
 					fs.writeFileSync(file, result);
 				})
 				.then(function (resolve, reject) {

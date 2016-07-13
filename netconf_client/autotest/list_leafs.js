@@ -21,17 +21,18 @@ var netconf_client = require('../netconf_client')
 var exec = require('child-process-promise').exec;
 var yang = require("libyang")
 config.show_logs = false
-yang_dir = __dirname + "/../../server_yang/"
 var config_folder = ''
+var ctx
+var mod
 
 var ignore = ['modules-state', 'netconf-state']
 
 function randomfolder() {
-    var length = 20
-    var result = ''
-    var chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
-    for (var i = length; i > 0; --i) result += chars[Math.floor(Math.random() * chars.length)]
-    return result;
+	var length = 20
+	var result = ''
+	var chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
+	for (var i = length; i > 0; --i) result += chars[Math.floor(Math.random() * chars.length)]
+	return result;
 }
 
 function iterate_xpaths(xml, namespace, result) {
@@ -53,6 +54,7 @@ function get_xpath(node, value) {
 		var orig = node
 		var num = 0
 		var head
+		var top_ns = [] // write namespace only once
 
 		var xpath = ''
 
@@ -63,7 +65,10 @@ function get_xpath(node, value) {
 		while (node) {
 			s = node.schema.nodetype
 			if (s == yang.LYS_LEAF || s == yang.LYS_CONTAINER || s == yang.LYS_LEAFLIST || s == yang.LYS_RFC) {
-				xpath = '/' + node.schema.name + xpath
+				if (node.parent && node.schema.module.name == node.parent.schema.module.name)
+					xpath = '/' + node.schema.name + xpath
+				else
+					xpath = '/' + node.schema.module.name + ':' + node.schema.name + xpath
 			}
 			if (s == yang.LYS_LIST) {
 				k = yang.cast_lys_node_list(node.schema)
@@ -83,15 +88,15 @@ function get_xpath(node, value) {
 						childs = childs.next
 					}
 				}
-				xpath = '/' + node.schema.name + xpath
+				if (node.parent && node.schema.module.name == node.parent.schema.module.name)
+					xpath = '/' + node.schema.name + xpath
+				else
+					xpath = '/' + node.schema.module.name + ':' + node.schema.name + xpath
 			}
 			head = node
 			node = node.parent
 			++num
 		}
-
-		yang_model = head.child.schema.module.ns.split(/[:,\/]+/).pop()
-		xpath = xpath.slice(0,1) + yang_model + ':' + xpath.slice(1)
 
 		let ret = 'undefined'
 		switch(value) {
@@ -114,20 +119,21 @@ function get_xpath(node, value) {
 	})
 }
 
-function get_type(xpath, yang_dir) {
+function parse_yang() {
 	return new Promise((resolve, reject) => {
-
-		var ietfdir = yang_dir
-
-		var ctx = yang.ly_ctx_new(yang_dir)
-
 		var fs = require('fs');
-		var files = fs.readdirSync(yang_dir);
+		var files = fs.readdirSync(config.remote_yang_dir);
 
-		var mod
+		ctx = yang.ly_ctx_new(config.remote_yang_dir)
 		for (var i in files) {
-			mod = yang.lys_parse_path(ctx, yang_dir + files[i], yang.LYS_IN_YANG);
+			mod = yang.lys_parse_path(ctx, config.remote_yang_dir + files[i], yang.LYS_IN_YANG);
 		}
+		return resolve()
+	})
+}
+
+function get_type(xpath) {
+	return new Promise((resolve, reject) => {
 
 		config_file = xpath.split(/[:,\/]+/)[1]
 
@@ -183,8 +189,10 @@ netconf_client.create().then(function(client)
 			console.error('ERROR: ', err);
 			});
 		}).then(function (resolve, reject) {
+			return parse_yang()
+		}).then(function (resolve, reject) {
 			return Promise.all(result.map(function (xpath) {
-				return get_type(xpath, yang_dir)
+				return get_type(xpath)
 			}))
 		}).then(function (resolve, reject) {
 			client.send_get()

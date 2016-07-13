@@ -27,7 +27,6 @@ let yng = []
 var i = 0
 
 function dfs(path) {
-	console.log(path)
 	if( fs.existsSync(path) ) {
 		fs.readdirSync(path).forEach(function(file,index){
 			var cur_path = path + "/" + file;
@@ -41,6 +40,7 @@ function dfs(path) {
 function download_server_schemas() {
 	return exec('node ./download_schemas.js')
 	.then(function (result) {
+		return run()
 	})
 	.catch(function (err) {
 		console.error('ERROR: ', err);
@@ -49,8 +49,8 @@ function download_server_schemas() {
 }
 
 function check_schemas(path) {
-	var p = Q()
-	p = p.then(function() { return fs.open(path,'r',function(err,fd){
+	return new Promise(function(resolve, reject) {
+	return fs.open(path,'r',function(err,fd){
 		if (err && err.code=='ENOENT') {
 			fs.mkdirSync(path);
 			return download_server_schemas()
@@ -60,7 +60,7 @@ function check_schemas(path) {
 			return download_server_schemas()
 		}
 	});
-	});
+	})
 }
 
 function r_int(low, high) {
@@ -97,18 +97,35 @@ var generate_data = function(y) {
 	// generate random data
 
 	if (y.leaf[1].type == 'string') {
-		y.leaf.push({valid:[r_string(1), r_string(1), r_string(1)]})
+		y.leaf.push({valid:[r_string(20), r_string(20), r_string(20)]})
+	} else if (y.leaf[1].type == 'int8') {
+		y.leaf.push({valid:[0,
+			r_int(-Math.pow(2,4),Math.pow(2,4)-1),
+			r_int(Math.pow(2,4), Math.pow(2,4)-1)]})
+		y.leaf.push({invalid:[-1 -Math.pow(2,4),
+			-r_int(0,Math.pow(2,8)) - r_int(0,Math.pow(2,8) -1),
+			Math.pow(2,8) + r_int(0, Math.pow(2,8))]})
+	} else if (y.leaf[1].type == 'uint8') {
+		y.leaf.push({valid:[0,
+			r_int(0, Math.pow(2,8)-1),
+			r_int(0, Math.pow(2,8)-1)]})
+		y.leaf.push({invalid:[-1,
+			- r_int(0,Math.pow(2,8)-1),
+			Math.pow(2,8) + r_int(0, Math.pow(2,8))]})
 	} else if (y.leaf[1].type == 'int16') {
 		y.leaf.push({valid:[0,
 			r_int(-Math.pow(2,8),Math.pow(2,8)-1),
 			r_int(Math.pow(2,8), Math.pow(2,8)-1)]})
+		y.leaf.push({invalid:[-1 -Math.pow(2,8),
+			-r_int(0,Math.pow(2,8)) - r_int(0,Math.pow(2,16) -1),
+			Math.pow(2,8) + r_int(0, Math.pow(2,8))]})
 	} else if (y.leaf[1].type == 'uint16') {
-		y.leaf.push({valid:[4,
-			r_int(4, Math.pow(2,16)-1),
-			r_int(4, Math.pow(2,16)-1)]})
+		y.leaf.push({valid:[0,
+			r_int(0, Math.pow(2,16)-1),
+			r_int(0, Math.pow(2,16)-1)]})
 		y.leaf.push({invalid:[-1,
 			- r_int(0,Math.pow(2,16)-1),
-			Math.pow(2,16) + r_int(0, Math.pow(2,16)-1)]})
+			Math.pow(2,16) + r_int(0, Math.pow(2,16))]})
 	} else if (y.leaf[1].type == 'bool') {
 		y.leaf.push({valid:['true','false']})
 		y.leaf.push({invalid:[r_string(r_int(1,100)), r_string(r_int(1,100)), r_string(r_int(1,100)) ]})
@@ -182,48 +199,44 @@ var run_tests = function(yng) {
 	return p;
 }
 
-var start = function() {
-	var p = Q()
-	p = p.then(function () {return check_schemas(config.remote_yang_dir)});
-	p = p.then(function (result) {
-		return exec('node ./list_leafs.js')
-		.then(function (result) {
-			var output = result.stdout.split(/[, ]+/).pop();
-			xpaths = result.stdout.split('\n')
-			return Promise.all(xpaths.map(function (xpath) {
-				if (xpath === '') return Promise.resolve();
 
-				let type = xpath.split(/[, ]+/).pop()
-				xpath = xpath.slice(0,xpath.length - (1 + type.length))
+function run() {
+	return exec('node ./list_leafs.js')
+	.then(function (result) {
+		var output = result.stdout.split(/[, ]+/).pop();
+		xpaths = result.stdout.split('\n')
+		return Promise.all(xpaths.map(function (xpath) {
+			if (xpath === '') return Promise.resolve();
+			let type = xpath.split(/[, ]+/).pop()
+			xpath = xpath.slice(0,xpath.length - (1 + type.length))
 
-				// skip undefined yang type
-				if (type === 'undefined') return Promise.resolve();
-				else if (xpath === '') return Promise.resolve();
+			// skip undefined yang type
+			if (type === 'undefined') return Promise.resolve();
+			else if (xpath === '') return Promise.resolve();
 
-				yng.push({leaf:[{xpath:xpath},{type:type}]})
-			}))
-			.then(function (resolve, reject) {
-				// get default values
-				return get_defaults(yng)
-			})
-			.then(function (resolve, reject) {
-				// generate random data
-				return Promise.all(yng.map(function (y) {
-					return generate_data(y)
-				}))
-			})
-			.then(function (resolve, reject) {
-				return run_tests(yng)
-			})
-			.then(function (resolve, reject) {
-				console.log("DONE \n")
-			})
+			yng.push({leaf:[{xpath:xpath},{type:type}]})
+		}))
+		.then(function (resolve, reject) {
+			// get default values
+			return get_defaults(yng)
 		})
-		.catch(function (err) {
-			console.error('ERROR: ', err);
-		});
+		.then(function (resolve, reject) {
+			// generate random data
+			return Promise.all(yng.map(function (y) {
+				return generate_data(y)
+			}))
+		})
+		.then(function (resolve, reject) {
+			return run_tests(yng)
+		})
+		.then(function (resolve, reject) {
+			console.log("DONE \n")
+		})
 	})
-	return p;
+	.catch(function (err) {
+		console.error('ERROR: ', err);
+	});
 }
 
-start()
+
+Promise.resolve(check_schemas(config.remote_yang_dir))

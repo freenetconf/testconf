@@ -20,11 +20,9 @@ var pd = require('pretty-data').pd;
 var config = require('../../core/config')
 var yang = require("libyang")
 
-yang_dir = __dirname + "/../../server_yang/"
-config.show_logs = false
+var nodeid = '/'
 
-var yang_import_path = "../../ietf-yangs"
-var yang_module_name
+config.show_logs = false
 
 process.argv.forEach(function (val, index, array) {
 	if (index == 2)
@@ -40,21 +38,14 @@ var left_xml = "<edit-config xmlns:nc='urn:ietf:params:xml:ns:netconf:base:1.0'>
 var right_xml = '</config>' +
 		'</edit-config>'
 
-// remove yang namespace
-xpath = xpath.split(":")
-namespace = xpath[0].slice(1)
-xpath = xpath.pop()
-
 // get namespace
 
-var ctx = yang.ly_ctx_new(yang_dir)
+var ctx = yang.ly_ctx_new(config.remote_yang_dir)
 var fs = require('fs');
-var files = fs.readdirSync(yang_dir);
+var files = fs.readdirSync(config.remote_yang_dir);
 
 for (var i in files) {
-	mod = yang.lys_parse_path(ctx, yang_dir + files[i], yang.LYS_IN_YANG);
-	if (namespace == mod.name)
-		namespace = mod.ns
+	mod = yang.lys_parse_path(ctx, config.remote_yang_dir + files[i], yang.LYS_IN_YANG);
 }
 
 nodes = xpath.split("\/")
@@ -63,24 +54,33 @@ var i = 0
 
 nodes.forEach(function(element) {
 	i++
+	if (element == '') return
 	keys = element.split(/[\[,\]]+/)
 	if (keys.length == 1) {
-		if (i == 1)
-			left_xml = left_xml + '<' + element + ' xmlns="' + namespace + '">'
-		else
+		nodeid += element
+		node = element.split(":")
+		if (node.length > 1) {
+			result = yang.ly_ctx_get_node(ctx, null, nodeid)
+			left_xml = left_xml + '<' + node[1]  + ' xmlns="' + result.module.ns + '">'
+			right_xml = '</' + node[1] + '>' + right_xml
+		} else {
 			left_xml = left_xml + '<' + element + '>'
-		if (i < nodes.length)
-			right_xml = '</' + element + '>' + right_xml
-		else
-			right_xml = value + '</' + element + '>' + right_xml
+
+			if (i < nodes.length)
+				right_xml = '</' + element + '>' + right_xml
+			else
+				right_xml = value + '</' + element + '>' + right_xml
+		}
+		nodeid += '/'
 	} else if (keys.length > 1 ) {
 		left_xml = left_xml + '<' + keys[0] + '>'
 		key = keys[1].split(/[=,\']+/)
 		left_xml = left_xml + '<' + key[0] + '>' + key[1] + '</' + key[0] + '>'
 		right_xml = '</' + keys[0] + '>' + right_xml
-
+		nodeid += keys[0] + '/'
 	}
 })
+
 
 xml = left_xml + right_xml
 

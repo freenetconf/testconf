@@ -20,13 +20,11 @@ var pd = require('pretty-data').pd;
 var config = require('../../core/config')
 var yang = require("libyang")
 
+var nodeid = '/'
+var xml_xpath = ''
+
 config.show_logs = false
-yang_dir = __dirname + "/../../server_yang/"
 
-var yang_import_path = "../../ietf-yangs"
-var yang_module_name
-
-var orig_xpath
 
 process.argv.forEach(function (val, index, array) {
 	if (index == 2)
@@ -37,39 +35,43 @@ process.argv.forEach(function (val, index, array) {
 var left_xml = '<get-config><source><running/></source><filter>'
 var right_xml = '</filter></get-config>'
 
-// remove yang namespace
-xpath = xpath.split(":")
-namespace = xpath[0].slice(1)
-xpath = xpath.pop()
-
 // get namespace
 
-var ctx = yang.ly_ctx_new(yang_dir)
+var ctx = yang.ly_ctx_new(config.remote_yang_dir)
 var fs = require('fs');
-var files = fs.readdirSync(yang_dir);
+var files = fs.readdirSync(config.remote_yang_dir);
 
 for (var i in files) {
-	mod = yang.lys_parse_path(ctx, yang_dir + files[i], yang.LYS_IN_YANG);
-	if (namespace == mod.name)
-		namespace = mod.ns
+	mod = yang.lys_parse_path(ctx, config.remote_yang_dir + files[i], yang.LYS_IN_YANG);
 }
 
 nodes = xpath.split("\/")
 
 nodes.forEach(function(element) {
+	if (element == '') return
 	keys = element.split(/[\[,\]]+/)
 	if (keys.length == 1) {
-		if (i == 1)
-			left_xml = left_xml + '<' +  + ' xmlns="' + namespace + '">'
-		else
+		nodeid += element
+		node = element.split(":")
+		if (node.length > 1) {
+			result = yang.ly_ctx_get_node(ctx, null, nodeid)
+			left_xml = left_xml + '<' + node[1]  + ' xmlns="' + result.module.ns + '">'
+			right_xml = '</' + node[1] + '>' + right_xml
+			xml_xpath += node[1]
+		} else {
 			left_xml = left_xml + '<' + element + '>'
-		right_xml = '</' + element + '>' + right_xml
+			right_xml = '</' + element + '>' + right_xml
+			xml_xpath += element
+		}
+		nodeid += '/'
+		xml_xpath += '/'
 	} else if (keys.length > 1 ) {
 		left_xml = left_xml + '<' + keys[0] + '>'
 		key = keys[1].split(/[=,\']+/)
 		left_xml = left_xml + '<' + key[0] + '>' + key[1] + '</' + key[0] + '>'
 		right_xml = '</' + keys[0] + '>' + right_xml
-
+		nodeid += keys[0] + '/'
+		xml_xpath += keys[0] + '/'
 	}
 })
 
@@ -86,8 +88,10 @@ netconf_client.create().then(function(client)
 
 		var xmlDoc = libxmljs.parseXml(xml);
 
-                xpath = "/rpc-reply/data/" + xpath
-		var gchild = xmlDoc.get(xpath)
+                xml_xpath = "/rpc-reply/data/" + xml_xpath
+		xml_xpath = xml_xpath.substring(0, (xml_xpath.length - 1))
+
+		var gchild = xmlDoc.get(xml_xpath)
 
                 xml_pp = pd.xml(gchild.childNodes().toString());
 		process.stdout.write(xml_pp)
