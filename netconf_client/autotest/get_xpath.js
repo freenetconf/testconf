@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Cisco Systems, Inc.
+ * Copyright (C) 2016 Deutsche Telekom AG.
  *
  * Author: Mislav Novakovic <mislav.novakovic@sartura.hr>
  * Author: Luka Perkov <luka.perkov@sartura.hr>
@@ -56,11 +56,14 @@ for (var i in files) {
 
 nodes = xpath.split("\/")
 
-nodes.forEach(function(value) {
-	keys = value.split(/[\[,\]]+/)
+nodes.forEach(function(element) {
+	keys = element.split(/[\[,\]]+/)
 	if (keys.length == 1) {
-		left_xml = left_xml + '<' + value + ' xmlns="' + namespace + '">'
-		right_xml = '</' + value + '>' + right_xml
+		if (i == 1)
+			left_xml = left_xml + '<' +  + ' xmlns="' + namespace + '">'
+		else
+			left_xml = left_xml + '<' + element + '>'
+		right_xml = '</' + element + '>' + right_xml
 	} else if (keys.length > 1 ) {
 		left_xml = left_xml + '<' + keys[0] + '>'
 		key = keys[1].split(/[=,\']+/)
@@ -87,7 +90,7 @@ netconf_client.create().then(function(client)
 		var gchild = xmlDoc.get(xpath)
 
                 xml_pp = pd.xml(gchild.childNodes().toString());
-                console.log(xml_pp);
+		process.stdout.write(xml_pp)
 
 		}).then(function (resolve, reject) {
 			process.exit(0)

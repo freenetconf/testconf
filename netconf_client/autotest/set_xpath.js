@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Cisco Systems, Inc.
+ * Copyright (C) 2016 Deutsche Telekom AG.
  *
  * Author: Mislav Novakovic <mislav.novakovic@sartura.hr>
  * Author: Luka Perkov <luka.perkov@sartura.hr>
@@ -65,7 +65,10 @@ nodes.forEach(function(element) {
 	i++
 	keys = element.split(/[\[,\]]+/)
 	if (keys.length == 1) {
-		left_xml = left_xml + '<' + element + ' xmlns="' + namespace + '">'
+		if (i == 1)
+			left_xml = left_xml + '<' + element + ' xmlns="' + namespace + '">'
+		else
+			left_xml = left_xml + '<' + element + '>'
 		if (i < nodes.length)
 			right_xml = '</' + element + '>' + right_xml
 		else
@@ -85,6 +88,11 @@ netconf_client.create().then(function(client)
 {
 	client.send(xml).thenDefault(function(reply)
 	{
+		xmlDoc = libxmljs.parseXml(reply)
+		response = xmlDoc.childNodes()
+
+		process.stdout.write(response.toString())
+
 		client.send_close().then(function (resolve, reject) {
 
 		}).then(function (resolve, reject) {
