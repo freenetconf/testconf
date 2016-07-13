@@ -20,6 +20,7 @@ config.yang_dir = __dirname + "/../yang/"
 config.keys_dir = __dirname + "/../keys/"
 config.server_methods_dir = __dirname + "/../netconf_server/methods/"
 config.show_logs = true
+config.remote_yang_dir = __dirname + "/../remote_yang/"
 
 config.netconf = {}
 config.netconf.host = '127.0.0.1'
