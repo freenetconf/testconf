@@ -26,7 +26,8 @@
 		"promise": "7.1.1",
 		"libyang": "1.0.9",
 		"libxmljs": "0.18.0",
-		"pretty-data": "0.40.0"
+		"pretty-data": "0.40.0",
+		"child-process-promise": "2.0.3"
 	},
 	"engine": "node >= 0.10.31",
 	"contributors": [
