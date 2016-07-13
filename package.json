@@ -24,7 +24,7 @@
 		"es6-shim": "0.35.0",
 		"buffer-equal-constant-time": "1.0.1",
 		"promise": "7.1.1",
-		"libyang": "1.0.9",
+		"libyang": "1.0.13",
 		"libxmljs": "0.18.0",
 		"pretty-data": "0.40.0",
 		"child-process-promise": "2.0.3",
