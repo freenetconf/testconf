@@ -16,12 +16,49 @@
 var netconf_client = require('../netconf_client')
 var util = require('util');
 
-netconf_client.create().then(function(client)
-{
-	client.send_get().thenDefault(function(reply)
-	{
+//netconf_client.create().then(function(client)
+//{
+//	client.send_get().thenDefault(function(reply)
+//	{
+//		console.log(reply)
+//		console.log(util.inspect(reply, {showHidden: false, depth: null}));
+//		client.send_close().thenDefault()
+//	})
+//})
+
+netconf_client.create()
+	.get(null, function(reply) {
+		console.log("Reply")
 		console.log(reply)
 		console.log(util.inspect(reply, {showHidden: false, depth: null}));
-		client.send_close().thenDefault()
 	})
-})
+	.get(null, function(reply) {
+		console.log("Reply")
+		console.log(reply)
+		console.log(util.inspect(reply, {showHidden: false, depth: null}));
+	})
+	.get(null, function(reply) {
+		console.log("Reply")
+		console.log(reply)
+		console.log(util.inspect(reply, {showHidden: false, depth: null}));
+	})
+	.get(null, function(reply) {
+		console.log("Reply")
+		console.log(reply)
+		console.log(util.inspect(reply, {showHidden: false, depth: null}));
+	})
+	.run()
+	.then(function(s) {
+		console.log("Success")
+		//console.log(s)
+	}, function(e) {
+		console.log("error")
+		console.log(e)
+	})
+	.catch(function(ex) {
+		console.log('exception')
+		console.log(ex)
+	})
+	.finally(function() {
+		process.exit(0)
+	})
